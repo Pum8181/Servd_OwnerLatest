@@ -48,25 +48,42 @@ jobs:
 
       - name: Determine build target from repo name
         id: target
+        # Derived from github.repository (guaranteed present on every
+        # trigger type, including manual "Run workflow") instead of
+        # github.event.repository.name, which isn't guaranteed to be
+        # populated identically across every event type.
         run: |
-          if [ "${{ github.event.repository.name }}" = "ServdOwner" ]; then
+          REPO_NAME="${GITHUB_REPOSITORY##*/}"
+          echo "repo_name=$REPO_NAME" >> "$GITHUB_OUTPUT"
+          if [ "$REPO_NAME" = "ServdOwner" ]; then
             echo "target=owner" >> "$GITHUB_OUTPUT"
             echo "entry=owner_v3.html" >> "$GITHUB_OUTPUT"
           else
             echo "target=customer" >> "$GITHUB_OUTPUT"
             echo "entry=index_v3.html" >> "$GITHUB_OUTPUT"
           fi
+          echo "Repo: $REPO_NAME"
 
       - name: Build
         working-directory: servd-v3
         env:
-          BASE_PATH: /${{ github.event.repository.name }}/
+          BASE_PATH: /${{ steps.target.outputs.repo_name }}/
           BUILD_TARGET: ${{ steps.target.outputs.target }}
         run: npm run build
 
       - name: Also serve at the bare repo root (no filename needed)
         working-directory: servd-v3
-        run: cp "dist/${{ steps.target.outputs.entry }}" dist/index.html
+        run: |
+          cp "dist/${{ steps.target.outputs.entry }}" dist/index.html
+          # .nojekyll disables GitHub's Jekyll processing of the Pages
+          # artifact — belt-and-suspenders in case it's ever the reason
+          # a build was served differently than expected.
+          touch dist/.nojekyll
+          # Cache-busting marker: lets us confirm the LIVE page is this
+          # exact deployment (not a stale CDN-cached one) by checking
+          # this comment's commit SHA/timestamp against what was just
+          # pushed. Safe to ignore/remove later.
+          echo "<!-- deployed from commit ${GITHUB_SHA} at $(date -u +%Y-%m-%dT%H:%M:%SZ) -->" >> dist/index.html
 
       - uses: actions/upload-pages-artifact@v3
         with:
