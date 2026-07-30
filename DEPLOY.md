@@ -2,53 +2,65 @@
 
 Three URLs, from this one working folder:
 
-- **Customer app** → GitHub repo `ServdClient` → GitHub Pages: `https://<you>.github.io/ServdClient/`
-- **Owner dashboard** → GitHub repo `ServdOwner` → GitHub Pages: `https://<you>.github.io/ServdOwner/`
+- **Customer app** → GitHub repo `Servd-Customer` → GitHub Pages: `https://<you>.github.io/Servd-Customer/`
+- **Owner dashboard** → GitHub repo `Servd-Main` → GitHub Pages: `https://<you>.github.io/Servd-Main/`
 - **Marketing site** → Netlify, on your real domain: `https://servd.tech`
 
-Both `ServdClient` and `ServdOwner` are full mirrors of this entire
+Both `Servd-Customer` and `Servd-Main` are full mirrors of this entire
 project (same commits, same files) — what makes them behave differently
 is a single GitHub Actions workflow file
 (`.github/workflows/deploy-pages.yml`) that checks **which repo it's
 running in** and builds only that repo's page. You never have to
 maintain two different codebases; every push here goes to both.
 
+The workflow publishes to a `gh-pages` branch (the classic, most
+reliable GitHub Pages method) rather than GitHub's newer "Actions-native"
+Pages integration — that one repeatedly got stuck serving the raw repo
+tree instead of the actual build, which is what caused the earlier
+`ServdClient`/`ServdOwner` repos to keep showing the wrong content.
+Publishing to a real branch and pointing Pages at "Deploy from a branch"
+sidesteps that entirely.
+
 ---
 
 ## 1. Push to both repos
 
-From this folder:
+Already done as of this setup — both remotes are configured
+(`servdcustomer`, `servdmain`) and pushed. For future reference:
 
 ```bash
-git remote add servdclient https://github.com/Pum8181/ServdClient.git
-git remote add servdowner  https://github.com/Pum8181/ServdOwner.git
-git push servdclient main
-git push servdowner main
+git remote add servdcustomer https://github.com/Pum8181/Servd-Customer.git
+git remote add servdmain     https://github.com/Pum8181/Servd-Main.git
+git push servdcustomer main
+git push servdmain main
 ```
-
-(If you'd like Claude to run these for you instead of doing it by hand,
-just say so.)
 
 ## 2. Turn on GitHub Pages — do this in BOTH repos
 
-In each repo (`ServdClient` and `ServdOwner`) on github.com:
+The first push already triggered the workflow, which creates a
+`gh-pages` branch in each repo (containing only the built site, not the
+source code). Once that first run finishes (check the **Actions** tab —
+"Deploy to GitHub Pages" should show green):
+
+In each repo (`Servd-Customer` and `Servd-Main`) on github.com:
 
 1. **Settings** → **Pages** (left sidebar).
-2. Under "Build and deployment" → **Source**, choose **GitHub Actions**.
-3. Go to the **Actions** tab — "Deploy to GitHub Pages" should already be
-   running from the push in step 1. Once it's green (usually under a
-   minute):
-   - `ServdClient` → `https://<you>.github.io/ServdClient/` (customer menu)
-   - `ServdOwner` → `https://<you>.github.io/ServdOwner/` (owner dashboard)
-4. Every future `git push servdclient main` / `git push servdowner main`
-   redeploys that one automatically.
+2. Under "Build and deployment" → **Source**, choose **"Deploy from a
+   branch"** (NOT "GitHub Actions" this time).
+3. **Branch**: select `gh-pages`, folder `/ (root)` → **Save**.
+4. Wait a minute, then:
+   - `Servd-Customer` → `https://<you>.github.io/Servd-Customer/` (customer menu)
+   - `Servd-Main` → `https://<you>.github.io/Servd-Main/` (owner dashboard)
+5. Every future `git push servdcustomer main` / `git push servdmain main`
+   rebuilds `gh-pages` automatically, and Pages picks up the change
+   within a minute or two — no need to touch the Source setting again.
 
 ## 3. Connect Netlify for servd.tech
 
 Netlify only needs ONE of these two repos connected — since both are
 full mirrors, either works identically for building the marketing site
-(they contain the same `netlify.toml`). Pick `ServdClient` unless you'd
-rather use `ServdOwner`.
+(they contain the same `netlify.toml`). Pick `Servd-Customer` unless
+you'd rather use `Servd-Main`.
 
 1. [app.netlify.com](https://app.netlify.com) → **Add new site** →
    **Import an existing project** → connect GitHub → pick the repo.
@@ -73,22 +85,21 @@ printable feature sheet.
 
 The owner dashboard's QR Codes tab defaults its "Menu page URL" to
 whatever domain it's currently running on — since it now lives at
-`https://<you>.github.io/ServdOwner/`, generating a QR there will
-correctly default to `https://<you>.github.io/ServdClient/index_v3.html?table=...`
-only if you type that in (the auto-default is based on the *current*
-page's own origin, which is the owner repo's domain, not the customer
-one — since they're two different domains now, always double-check the
-"Menu page URL" field before generating a QR and paste in the
-`ServdClient` Pages URL by hand).
+`https://<you>.github.io/Servd-Main/`, generating a QR there will
+default to that domain, not the customer app's. Since they're two
+different domains, always double-check the "Menu page URL" field before
+generating a QR and paste in the `Servd-Customer` Pages URL by hand
+(`https://<you>.github.io/Servd-Customer/index_v3.html`).
 
 ## Updating the site after this initial setup
 
 ```bash
 git add .
 git commit -m "describe what changed"
-git push servdclient main
-git push servdowner main
+git push servdcustomer main
+git push servdmain main
 ```
 
-Both pushes trigger their own repo's GitHub Actions run; Netlify
-redeploys automatically from whichever repo you connected it to.
+Both pushes trigger their own repo's GitHub Actions run, which updates
+that repo's `gh-pages` branch automatically; Netlify redeploys
+automatically from whichever repo you connected it to.

@@ -1,17 +1,19 @@
 name: Deploy to GitHub Pages
 
-# This exact same workflow file is pushed to BOTH the ServdClient and
-# ServdOwner repos. It figures out which single page to build from the
-# repo's own name, so one file works for both without hand-editing per
-# repo:
-#   - repo "ServdOwner"  → builds owner_v3.html only
-#   - anything else (ServdClient, etc.) → builds index_v3.html
-# Result:
-#   ServdClient → https://<you>.github.io/ServdClient/
-#   ServdOwner  → https://<you>.github.io/ServdOwner/
-# (both also reachable at their original /index_v3.html or /owner_v3.html
-# path — this workflow additionally copies that file to index.html so
-# the bare repo URL with no filename works too.)
+# This exact same workflow file is pushed to BOTH Servd-Customer and
+# Servd-Main. It figures out which single page to build from the
+# repo's own name:
+#   - repo "Servd-Main"  → builds owner_v3.html only
+#   - anything else (Servd-Customer, etc.) → builds index_v3.html
+#
+# Publishes to the `gh-pages` branch (classic method) rather than
+# GitHub's newer Actions-native Pages integration — that integration
+# repeatedly got stuck serving the raw repo tree instead of this
+# workflow's build output. Publishing to a real branch and pointing
+# Pages at "Deploy from a branch: gh-pages" sidesteps that entirely.
+#
+# After this workflow runs once, go to each repo's Settings → Pages →
+# Source: "Deploy from a branch" → Branch: gh-pages, folder "/ (root)".
 #
 # marketing.html is NOT part of this workflow — it's hosted separately
 # on Netlify at servd.tech (see netlify.toml).
@@ -22,16 +24,10 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
-
-concurrency:
-  group: pages
-  cancel-in-progress: true
+  contents: write
 
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -48,14 +44,10 @@ jobs:
 
       - name: Determine build target from repo name
         id: target
-        # Derived from github.repository (guaranteed present on every
-        # trigger type, including manual "Run workflow") instead of
-        # github.event.repository.name, which isn't guaranteed to be
-        # populated identically across every event type.
         run: |
           REPO_NAME="${GITHUB_REPOSITORY##*/}"
           echo "repo_name=$REPO_NAME" >> "$GITHUB_OUTPUT"
-          if [ "$REPO_NAME" = "ServdOwner" ]; then
+          if [ "$REPO_NAME" = "Servd-Main" ]; then
             echo "target=owner" >> "$GITHUB_OUTPUT"
             echo "entry=owner_v3.html" >> "$GITHUB_OUTPUT"
           else
@@ -75,26 +67,11 @@ jobs:
         working-directory: servd-v3
         run: |
           cp "dist/${{ steps.target.outputs.entry }}" dist/index.html
-          # .nojekyll disables GitHub's Jekyll processing of the Pages
-          # artifact — belt-and-suspenders in case it's ever the reason
-          # a build was served differently than expected.
           touch dist/.nojekyll
-          # Cache-busting marker: lets us confirm the LIVE page is this
-          # exact deployment (not a stale CDN-cached one) by checking
-          # this comment's commit SHA/timestamp against what was just
-          # pushed. Safe to ignore/remove later.
           echo "<!-- deployed from commit ${GITHUB_SHA} at $(date -u +%Y-%m-%dT%H:%M:%SZ) -->" >> dist/index.html
 
-      - uses: actions/upload-pages-artifact@v3
+      - name: Publish to gh-pages branch
+        uses: peaceiris/actions-gh-pages@v4
         with:
-          path: servd-v3/dist
-
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - id: deployment
-        uses: actions/deploy-pages@v4
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: servd-v3/dist

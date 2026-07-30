@@ -50,14 +50,14 @@ npm run preview    # serve the production build locally
 
 `marketing.html` goes to **Netlify** at the real domain (servd.tech).
 `index_v3.html` and `owner_v3.html` each go to their own **GitHub
-Pages** repo (`ServdClient` and `ServdOwner`), free. See
+Pages** repo (`Servd-Customer` and `Servd-Main`), free. See
 [DEPLOY.md](../DEPLOY.md) at the repo root for the full step-by-step
 (push to both repos, enable Pages in each, connect Netlify, add the
 custom domain, DNS) — this section is just the reference summary.
 
 - **GitHub Pages** is pre-configured via
   `../.github/workflows/deploy-pages.yml` — the *same* workflow file is
-  pushed to both `ServdClient` and `ServdOwner`; it detects which repo
+  pushed to both `Servd-Customer` and `Servd-Main`; it detects which repo
   it's running in (by name) and builds only that repo's page, with
   `BASE_PATH` set to `/<repo-name>/` (GitHub Pages project sites serve
   from a subpath, not the domain root) via `vite.config.js`'s
