@@ -1,0 +1,21 @@
+// Paste into Firebase Console → Storage → Rules
+//
+// WARNING: same tradeoff as firestore-rules.txt — this allows anyone with
+// your Firebase web config to upload/overwrite files under menu-images/.
+// Acceptable for a single-restaurant pilot with no user accounts, but
+// tighten before onboarding multiple restaurants (Firebase Auth + rules
+// scoped per restaurant, and a file-size/type limit at minimum).
+//
+// If you haven't enabled Storage yet: Firebase Console → Build → Storage
+// → Get started, then paste these rules.
+
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /menu-images/{fileName} {
+      allow read: if true;
+      allow write: if request.resource.size < 5 * 1024 * 1024
+                   && request.resource.contentType.matches('image/.*');
+    }
+  }
+}

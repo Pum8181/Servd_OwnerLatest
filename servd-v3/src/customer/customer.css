@@ -1,0 +1,361 @@
+/* Customer app: full dark-forest-green theme, matching the "Verde & Co."
+   reference screenshot (the one with clean, non-garbled copy). */
+.c-app {
+  min-height: 100vh;
+  background: var(--forest);
+  color: var(--ink-on-forest);
+  padding-bottom: 6.5rem; /* clears the floating bottom nav */
+}
+
+.c-wrap { max-width: 640px; margin: 0 auto; padding: 0 1.25rem; }
+
+/* ── Header ─────────────────────────────────────────────────────── */
+.c-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1.25rem 0 0.5rem;
+}
+.c-header h1 {
+  font-size: 1.5rem; font-weight: 600; color: var(--ink-on-forest);
+  flex: 1; text-align: center;
+}
+.c-avatar-btn, .c-icon-btn {
+  width: 44px; height: 44px; border-radius: 50%; border: none;
+  background: rgba(255, 255, 255, 0.08); color: var(--ink-on-forest);
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  font-size: 1.1rem;
+}
+
+.c-search {
+  display: flex; align-items: center; gap: 0.6rem;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--line-on-forest);
+  border-radius: var(--radius-pill);
+  padding: 0.8rem 1.1rem;
+  margin: 0.75rem 0 1rem;
+}
+.c-search input {
+  background: none; border: none; outline: none; color: var(--ink-on-forest);
+  font-family: var(--font-body); font-size: 0.9375rem; width: 100%;
+}
+.c-search input::placeholder { color: var(--ink-on-forest-muted); }
+.c-search svg { flex-shrink: 0; opacity: 0.75; }
+
+/* ── Filter pills ───────────────────────────────────────────────── */
+.c-pills {
+  display: flex; gap: 0.6rem; overflow-x: auto; padding-bottom: 0.5rem;
+  margin-bottom: 1.25rem; scrollbar-width: none;
+}
+.c-pills::-webkit-scrollbar { display: none; }
+.c-pill {
+  flex-shrink: 0; padding: 0.6rem 1.1rem; border-radius: var(--radius-pill);
+  font-size: 0.8125rem; font-weight: 600; white-space: nowrap;
+  border: 1.5px solid var(--line-on-forest); background: transparent;
+  color: var(--ink-on-forest-muted); min-height: 40px;
+}
+.c-pill.active { background: var(--cream); color: var(--forest); border-color: var(--cream); }
+
+/* Sticky category nav: pinned under the Featured carousel as the user
+   scrolls the menu, matching the page's forest background so scrolled
+   content disappears cleanly behind it instead of showing through. */
+.c-sticky-categories {
+  position: sticky; top: 0; z-index: 30;
+  background: var(--forest);
+  padding-top: 0.75rem; margin-bottom: 0.25rem;
+}
+.c-sticky-categories .c-pills { margin-bottom: 0.75rem; }
+
+/* ── Section headings ───────────────────────────────────────────── */
+.c-section-title {
+  font-size: 1rem; font-weight: 600; color: var(--ink-on-forest);
+  margin: 1.5rem 0 0.75rem; padding-bottom: 0.4rem;
+  border-bottom: 2px solid var(--forest-light); display: inline-block;
+}
+
+/* Per-category headers in the main menu list — serif, more like a menu
+   section title than the small utility label above. */
+.c-category-section { margin-bottom: 0.5rem; }
+.c-category-header {
+  font-family: var(--font-display); font-size: 1.375rem; font-weight: 600;
+  color: var(--ink-on-forest); margin: 1.75rem 0 1rem;
+}
+.c-category-section:first-child .c-category-header { margin-top: 0.5rem; }
+
+/* ── Horizontal carousels (Trending / Chef's Specials / etc.) ────────
+   Native touch-scroll + snap on mobile; small arrow buttons layered on
+   top for desktop pointer users only. */
+.c-carousel-section { margin-bottom: 0.5rem; }
+.c-carousel-wrap { position: relative; }
+.c-carousel-track {
+  display: flex; gap: 0.9rem; overflow-x: auto; scroll-snap-type: x proximity;
+  padding: 0.25rem 0.1rem 0.75rem; scrollbar-width: none; -webkit-overflow-scrolling: touch;
+}
+.c-carousel-track::-webkit-scrollbar { display: none; }
+
+/* FIX: arrows must never sit over the "Add to Cart" button or card
+   text. Rather than centering on the whole card's height (which would
+   land roughly on the button at the bottom of a compact card), they're
+   pinned to the image's vertical center only, well above the text/
+   button area underneath it. Desktop-only — mobile relies on native
+   touch scrolling, no arrows to get in the way of a swipe. */
+.c-carousel-arrow {
+  display: none;
+  position: absolute; top: 34%; transform: translateY(-50%);
+  width: 36px; height: 36px; border-radius: 50%; border: none;
+  background: rgba(16, 35, 26, 0.75); color: var(--cream);
+  font-size: 1.25rem; line-height: 1; z-index: 5;
+  align-items: center; justify-content: center;
+}
+.c-carousel-arrow-left { left: -6px; }
+.c-carousel-arrow-right { right: -6px; }
+@media (hover: hover) and (pointer: fine) {
+  .c-carousel-arrow { display: flex; }
+}
+
+/* ── Featured hero carousel ───────────────────────────────────────
+   One large, premium rail merging Trending / Chef's Specials / Today's
+   Discounts, instead of stacking a separate carousel per tag. Wide
+   hero cards with the image as the full card background and a bottom
+   gradient mask carrying the name/price, per the "hero-style card"
+   spec — not another small thumbnail-and-text row like the grid below. */
+.c-featured-section { margin: 0.25rem 0 0.5rem; }
+.c-featured-track { gap: 1rem; padding: 0.25rem 0.1rem 0.75rem; }
+.c-featured-item { flex: 0 0 auto; width: min(78vw, 320px); scroll-snap-align: start; }
+.c-featured-arrow { top: 50%; }
+
+.c-hero-card {
+  position: relative; width: 100%; aspect-ratio: 16 / 10;
+  border-radius: var(--radius-lg); overflow: hidden;
+  box-shadow: var(--shadow-soft-lg);
+  display: flex; align-items: flex-end;
+}
+.c-hero-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.c-hero-gradient {
+  position: absolute; inset: 0; z-index: 1;
+  background: linear-gradient(180deg, rgba(16, 35, 26, 0) 40%, rgba(16, 35, 26, 0.88) 100%);
+}
+.c-hero-content { position: relative; z-index: 2; width: 100%; padding: 1rem 1.1rem; }
+.c-hero-name {
+  font-family: var(--font-display); font-size: 1.1875rem; font-weight: 600;
+  color: var(--cream); margin-bottom: 0.3rem;
+}
+.c-hero-price-row { display: flex; align-items: center; gap: 0.5rem; font-size: 0.9375rem; font-weight: 700; }
+.c-hero-price, .c-hero-price-now { color: var(--cream); }
+.c-hero-price-was { color: rgba(243, 241, 232, 0.65); text-decoration: line-through; font-weight: 500; font-size: 0.8125rem; }
+.c-hero-add {
+  position: absolute; top: 0.85rem; right: 0.85rem; z-index: 3;
+  width: 42px; height: 42px; border-radius: 50%; border: none;
+  background: var(--cream); color: var(--forest); font-size: 1.25rem; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+}
+.c-hero-qty {
+  position: absolute; top: 0.7rem; right: 0.7rem; z-index: 3;
+  background: rgba(16, 35, 26, 0.85);
+}
+.c-hero-card.is-soldout { opacity: 0.6; }
+.c-hero-card.is-soldout .c-hero-add { pointer-events: none; opacity: 0.5; }
+.c-hero-card .c-soldout-badge { z-index: 3; }
+
+/* ── Image fallback ────────────────────────────────────────────────
+   If a stock photo URL 404s, show a quiet cream box with a small fork/
+   knife glyph instead of a broken-image icon or a huge placeholder
+   text label. */
+.c-img-fallback {
+  display: flex; align-items: center; justify-content: center;
+  background: var(--cream-deep); color: var(--ink-muted); font-size: 1.5rem;
+}
+.c-hero-card .c-img-fallback { font-size: 2.25rem; }
+
+/* ── Dish cards ─────────────────────────────────────────────────────
+   Cards are light cream/white floating on the dark forest-green page
+   background (per the "cards should be light, not dark" update) — only
+   the cards changed, the page canvas stays forest green. Text inside
+   cards switches to the dark ink palette for contrast. ───────────── */
+.c-card {
+  position: relative;
+  background: var(--cream);
+  border-radius: var(--radius-lg);
+  padding: 0.75rem;
+  margin-bottom: 0.9rem;
+  display: flex; gap: 0.9rem; align-items: center;
+  box-shadow: var(--shadow-soft-lg);
+  overflow: hidden;
+}
+.c-card-img {
+  width: 84px; height: 84px; border-radius: var(--radius-md);
+  object-fit: cover; flex-shrink: 0; background: var(--cream-deep);
+}
+.c-card-body { flex: 1; min-width: 0; }
+.c-card-name { font-family: var(--font-display); font-size: 1.0625rem; font-weight: 600; color: var(--ink); margin-bottom: 0.2rem; }
+.c-card-desc {
+  font-size: 0.8125rem; color: var(--ink-muted);
+  overflow: hidden; text-overflow: ellipsis; display: -webkit-box;
+  -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+}
+.c-card-price-row { display: flex; align-items: center; gap: 0.5rem; margin-top: 0.4rem; }
+.c-card-price { font-family: var(--font-body); font-weight: 700; color: var(--forest); }
+.c-card-price-was { font-size: 0.8125rem; color: var(--ink-muted); text-decoration: line-through; }
+.c-card-price-now { color: var(--accent-deep); font-weight: 700; }
+
+.c-soldout-badge {
+  position: absolute; top: 0.75rem; left: 0.75rem; z-index: 2;
+  font-size: 0.6875rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em;
+  padding: 0.3rem 0.6rem; border-radius: var(--radius-pill);
+  background: rgba(0, 0, 0, 0.55); color: white;
+}
+
+/* ── Owner-tag badges ──────────────────────────────────────────────
+   One primary badge (highest-priority tag wins — see TAG_PRIORITY in
+   lib/menu.js) plus a "+n" that reveals the rest on tap, so a
+   triple-tagged dish never turns into a wall of pills. Each tag kind
+   gets its own color so Chef's Special / Trending / Best Seller /
+   Sale stay visually distinguishable at a glance, matching the same
+   chip colors used in the owner's Menu Management list. */
+.c-tag-badge-wrap { position: absolute; top: 0.75rem; left: 0.75rem; z-index: 3; display: flex; align-items: center; gap: 0.35rem; }
+.c-tag-badge {
+  font-size: 0.6875rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em;
+  padding: 0.3rem 0.6rem; border-radius: var(--radius-pill); white-space: nowrap; line-height: 1.3;
+}
+.c-tag-badge--discount { background: var(--accent); color: white; }
+.c-tag-badge--chef { background: var(--cream); color: var(--forest); border: 1.5px solid var(--forest); }
+.c-tag-badge--trending { background: var(--gold); color: white; }
+.c-tag-badge--bestseller { background: var(--forest); color: var(--cream); }
+.c-tag-more {
+  width: 22px; height: 22px; min-height: 0; border-radius: 50%; border: none;
+  background: rgba(0, 0, 0, 0.55); color: white; font-size: 0.625rem; font-weight: 700;
+  display: flex; align-items: center; justify-content: center; padding: 0; flex-shrink: 0;
+}
+.c-tag-popover {
+  position: absolute; top: calc(100% + 0.4rem); left: 0; z-index: 6;
+  background: var(--white); border-radius: var(--radius-sm); box-shadow: var(--shadow-soft-lg);
+  padding: 0.5rem; display: flex; flex-direction: column; gap: 0.35rem; min-width: 8.5rem;
+}
+.c-tag-popover .c-tag-badge { text-align: center; }
+
+.c-card.is-soldout { opacity: 0.5; }
+.c-card.is-soldout .c-add-btn { pointer-events: none; opacity: 0.4; }
+
+.c-add-btn {
+  width: 44px; height: 44px; border-radius: 50%; border: none;
+  background: var(--forest); color: var(--cream); font-size: 1.25rem; font-weight: 700;
+  flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+  align-self: flex-end;
+}
+.c-qty-control {
+  display: flex; align-items: center; gap: 0.5rem;
+  background: var(--forest); border-radius: var(--radius-pill); padding: 0.25rem;
+}
+.c-qty-control button {
+  width: 32px; height: 32px; border-radius: 50%; border: none; background: transparent;
+  color: var(--cream); font-weight: 700; font-size: 1.1rem;
+}
+.c-qty-control span { min-width: 1.2rem; text-align: center; font-weight: 700; color: var(--cream); }
+
+.c-heart-btn {
+  position: absolute; top: 0.6rem; right: 0.6rem; width: 32px; height: 32px;
+  border-radius: 50%; background: rgba(255, 255, 255, 0.85); border: none;
+  display: flex; align-items: center; justify-content: center;
+}
+
+/* ── Floating bottom nav (glassmorphism) ────────────────────────── */
+.c-bottom-nav {
+  position: fixed; left: 50%; bottom: 1.1rem; transform: translateX(-50%);
+  display: flex; align-items: center; gap: 0.25rem;
+  background: rgba(16, 35, 26, 0.72);
+  backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius-pill);
+  padding: 0.5rem;
+  box-shadow: var(--shadow-on-forest);
+  z-index: 50;
+}
+.c-nav-btn {
+  width: 48px; height: 48px; border-radius: 50%; border: none; background: transparent;
+  color: var(--ink-on-forest-muted); display: flex; align-items: center; justify-content: center;
+  position: relative;
+}
+.c-nav-btn.active { background: var(--cream); color: var(--forest); }
+.c-nav-badge {
+  position: absolute; top: 4px; right: 4px; width: 9px; height: 9px; border-radius: 50%;
+  background: var(--accent); border: 1.5px solid var(--forest-deep);
+}
+
+/* ── Cart bar + checkout sheet ──────────────────────────────────── */
+.c-cart-bar {
+  position: fixed; left: 1rem; right: 1rem; bottom: 5.5rem; z-index: 45;
+  background: var(--cream); color: var(--forest);
+  border-radius: var(--radius-pill); padding: 0.9rem 1.25rem;
+  display: flex; align-items: center; justify-content: space-between;
+  box-shadow: var(--shadow-soft-lg); max-width: 640px; margin: 0 auto;
+}
+.c-cart-bar strong { font-family: var(--font-body); }
+
+.c-overlay {
+  position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5); z-index: 90;
+}
+.c-sheet {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 95;
+  background: var(--cream); color: var(--ink);
+  border-radius: 24px 24px 0 0; max-height: 88dvh; overflow-y: auto;
+  padding: 1.5rem 1.5rem calc(1.5rem + env(safe-area-inset-bottom));
+}
+.c-sheet h2 { font-size: 1.375rem; margin-bottom: 1rem; }
+.c-sheet-line { display: flex; justify-content: space-between; padding: 0.6rem 0; border-bottom: 1px dashed var(--line); font-size: 0.9375rem; }
+.c-sheet-total { display: flex; justify-content: space-between; font-weight: 700; font-size: 1.125rem; padding: 1rem 0; }
+.c-btn-primary {
+  width: 100%; background: var(--forest); color: var(--cream); border: none;
+  border-radius: var(--radius-pill); padding: 1rem; font-weight: 700; font-size: 1rem;
+}
+.c-btn-secondary {
+  width: 100%; background: transparent; color: var(--ink); border: 1.5px solid var(--line);
+  border-radius: var(--radius-pill); padding: 1rem; font-weight: 700; font-size: 1rem; margin-top: 0.6rem;
+}
+
+/* FIX (modal centering bug): centering used to live on .c-modal itself
+   via `position:fixed; left:50%; top:50%; transform:translate(-50%,-50%)`.
+   Framer Motion animates `scale`/`opacity` on this same element by
+   writing directly to its inline `transform` style — and Motion's
+   transform write REPLACES the whole property, it doesn't know about
+   or preserve the translate(-50%,-50%) that was centering the modal.
+   The result: as soon as the entrance animation ran, the modal's own
+   half-width/half-height centering offset was silently wiped out, so it
+   rendered anchored at its raw top-left corner (50%, 50% of viewport)
+   instead of centered — most visible on mobile, where the modal is a
+   much larger fraction of a narrow screen, so the resulting offset (half
+   the modal's own width/height) reads as "way off-center" rather than a
+   few stray pixels. Fix: centering now lives on a separate, non-animated
+   fixed flex wrapper (.c-modal-shell). The inner .c-modal is a normal
+   flow element sized by the flex parent — Motion is free to animate its
+   transform for the scale effect without fighting anything. */
+.c-modal-shell {
+  position: fixed; inset: 0; z-index: 96;
+  display: flex; align-items: center; justify-content: center;
+  padding: 1rem;
+}
+.c-modal {
+  width: min(90vw, 380px); max-height: 88vh; overflow-y: auto;
+  background: var(--cream); color: var(--ink);
+  border-radius: var(--radius-lg); padding: 1.75rem; text-align: center;
+}
+.c-modal input {
+  width: 100%; padding: 0.85rem 1rem; border-radius: var(--radius-sm);
+  border: 1.5px solid var(--line); font-size: 1rem; margin: 1rem 0; text-align: center;
+}
+.c-split-option {
+  display: block; width: 100%; text-align: left; padding: 0.9rem 1rem;
+  border: 1.5px solid var(--line); border-radius: var(--radius-md); background: var(--white);
+  margin-bottom: 0.6rem;
+}
+.c-split-option strong { display: block; font-size: 0.9375rem; }
+.c-split-option span { font-size: 0.78125rem; color: var(--ink-muted); }
+.c-skip-link { background: none; border: none; color: var(--ink-muted); text-decoration: underline; font-size: 0.8125rem; }
+
+/* ── Responsive: iPad+ reflows the single-column feed into a grid ── */
+@media (min-width: 720px) {
+  .c-wrap { max-width: 900px; }
+  .c-feed-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+  .c-feed-grid .c-card { margin-bottom: 0; }
+}
+@media (min-width: 1024px) {
+  .c-wrap { max-width: 1100px; }
+  .c-feed-grid { grid-template-columns: repeat(3, 1fr); }
+}

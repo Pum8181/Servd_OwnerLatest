@@ -1,0 +1,69 @@
+@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&family=Inter:wght@400;500;600;700&display=swap");
+
+:root {
+  /* Deep forest green + warm cream, extracted from the reference
+     screenshots (dashboard uses green-as-accent on cream, customer
+     dark mode uses green as the full background). */
+  --forest: #1A3626;
+  --forest-deep: #10231A;
+  --forest-light: #2F5A3E;
+  --cream: #F9F7F1;
+  --cream-deep: #F1ECDF;
+  --white: #FFFFFF;
+  --ink: #1D241F;
+  --ink-muted: #6B7A70;
+  --ink-on-forest: #F3F1E8;
+  --ink-on-forest-muted: rgba(243, 241, 232, 0.68);
+  --line: rgba(26, 54, 38, 0.12);
+  --line-on-forest: rgba(243, 241, 232, 0.14);
+
+  /* Coral accent for sale/discount states only — everything else in
+     the reference is strictly green + cream. */
+  --accent: #D9724B;
+  --accent-deep: #B85A36;
+
+  /* Extra tag-badge colors — Trending/Best Seller need their own
+     identity distinct from the green/terracotta core palette so all
+     four owner tags stay visually distinguishable at a glance. */
+  --gold: #B98D34;
+  --gray-muted: #8A8F87;
+
+  --radius-lg: 24px;
+  --radius-md: 16px;
+  --radius-sm: 10px;
+  --radius-pill: 999px;
+
+  --shadow-soft: 0 10px 30px rgba(20, 40, 30, 0.08);
+  --shadow-soft-lg: 0 20px 50px rgba(20, 40, 30, 0.14);
+  --shadow-on-forest: 0 10px 30px rgba(0, 0, 0, 0.28);
+
+  --font-display: "Playfair Display", Georgia, serif;
+  --font-body: "Inter", system-ui, sans-serif;
+}
+
+* { box-sizing: border-box; }
+html, body, #root { height: 100%; }
+body {
+  margin: 0;
+  font-family: var(--font-body);
+  color: var(--ink);
+  background: var(--cream);
+  -webkit-font-smoothing: antialiased;
+}
+h1, h2, h3, h4 { font-family: var(--font-display); margin: 0; line-height: 1.15; }
+p { margin: 0; }
+button { font-family: inherit; cursor: pointer; }
+img { max-width: 100%; display: block; }
+
+/* Minimum comfortable touch target for anything interactive, per the
+   44x44px requirement carried over from the marketing-site audit. */
+button, a[role="button"], .tap-target {
+  min-height: 44px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

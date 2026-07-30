@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#1A3626" />
+    <title>Servd — QR Ordering With a Human Check Before It Hits the Kitchen</title>
+    <meta name="description" content="Servd is a premium QR ordering system for independent restaurants: guests scan, order, and split the bill from their own phone, while every order pauses for a quick human confirmation before it reaches the kitchen." />
+    <link rel="canonical" href="https://servd.tech/marketing.html" />
+
+    <!-- Open Graph / Twitter card. NOTE: /og-image.png does not exist yet
+         — this points at where a real 1200×630 export of the hero
+         section should live (public/og-image.png). Without that file
+         these tags degrade gracefully (most platforms just show the
+         title/description with no image), they don't error. -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Servd — QR Ordering With a Human Check Before It Hits the Kitchen" />
+    <meta property="og:description" content="Guests scan, order, and split the bill from their own phone. Every order pauses for a human confirmation before it reaches the kitchen." />
+    <meta property="og:url" content="https://servd.tech/marketing.html" />
+    <meta property="og:image" content="https://servd.tech/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Servd — QR Ordering With a Human Check Before It Hits the Kitchen" />
+    <meta name="twitter:description" content="Guests scan, order, and split the bill from their own phone. Every order pauses for a human confirmation before it reaches the kitchen." />
+    <meta name="twitter:image" content="https://servd.tech/og-image.png" />
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "SoftwareApplication",
+          "name": "Servd",
+          "applicationCategory": "BusinessApplication",
+          "operatingSystem": "Web",
+          "description": "QR ordering system for independent restaurants with a human confirmation step before orders reach the kitchen, per-guest order tracking, and flexible split billing.",
+          "offers": {
+            "@type": "Offer",
+            "priceCurrency": "USD",
+            "availability": "https://schema.org/InStock"
+          }
+        },
+        {
+          "@type": "FAQPage",
+          "mainEntity": [
+            {
+              "@type": "Question",
+              "name": "Does Servd take a cut of my sales?",
+              "acceptedAnswer": { "@type": "Answer", "text": "No. It's a flat monthly rate, never a percentage of what you ring in." }
+            },
+            {
+              "@type": "Question",
+              "name": "What happens if I don't confirm an order?",
+              "acceptedAnswer": { "@type": "Answer", "text": "It simply sits in Needs Review. Nothing reaches the kitchen until a staff member taps Approve." }
+            },
+            {
+              "@type": "Question",
+              "name": "Do my guests need to download an app?",
+              "acceptedAnswer": { "@type": "Answer", "text": "No. The QR opens the menu directly in their phone's browser." }
+            },
+            {
+              "@type": "Question",
+              "name": "Can I run this on my existing tablet or do I need new hardware?",
+              "acceptedAnswer": { "@type": "Answer", "text": "Any modern tablet or laptop with a browser works for the owner dashboard — no special hardware or POS integration required." }
+            }
+          ]
+        }
+      ]
+    }
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/marketing/marketing-main.jsx"></script>
+  </body>
+</html>

@@ -1,0 +1,70 @@
+/* ════════════════════════════════════════════════════════════════
+   MARKETING DESIGN TOKENS — refined 8-role palette + type scale.
+   Scoped to the marketing page only (loaded after the shared
+   src/styles/tokens.css, which still supplies the base reset). Prefixed
+   `--m-` so nothing here ever collides with the customer/owner apps.
+
+   PALETTE ROLES (8, as requested): primary, primary-dark, secondary,
+   accent, surface, muted, success, danger.
+
+   CONTRAST NOTES (manually reasoned, not machine-measured — verify
+   with a real contrast checker before a client sees this):
+   - primary (#1A3626) on surface (#FBF6EC): both near opposite ends of
+     the lightness scale → comfortably passes AA for any text size.
+   - accent (#C1502B) on surface: mid-lightness orange-red on a very
+     light warm cream lands close to the AA line for *small* text.
+     Treat `--m-accent` as a fill/background/large-text color only;
+     use `--m-accent-deep` for any small accent-colored text (badges,
+     eyebrows, links) — that shade is deliberately darker for exactly
+     this reason.
+   - success/danger are used for state text sparingly (e.g. form
+     feedback) and are dark enough on `--m-surface` to read as normal
+     body-size text.
+   ════════════════════════════════════════════════════════════════ */
+
+@import url("https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700;800&display=swap");
+
+:root {
+  /* Core 8 roles */
+  --m-primary: #1A3626;        /* forest green — brand anchor, CTAs, headings on light */
+  --m-primary-dark: #0F2118;   /* deep forest — high-contrast sections, hero backgrounds */
+  --m-secondary: #2F5A3E;      /* lighter forest — secondary buttons, hover states, dividers */
+  --m-accent: #C1502B;         /* terracotta — sparingly, for emphasis and highlight fills */
+  --m-accent-deep: #8A3A1F;    /* darker terracotta — required for any small accent TEXT (AA) */
+  --m-surface: #FBF6EC;        /* warm paper cream — page background */
+  --m-surface-alt: #F1E7D5;    /* deeper cream — tinted section backgrounds, cards-on-cream */
+  --m-muted: #6E6154;          /* warm gray-brown — secondary/body-muted text on cream */
+  --m-success: #45593B;        /* olive — confirmation/trust states (form success, checkmarks) */
+  --m-danger: #9C3A2A;         /* muted brick red — form errors, destructive-adjacent states */
+
+  --m-ink: #211B14;            /* primary text color, warm near-black not pure black */
+  --m-white: #FFFFFF;
+  --m-line: rgba(33, 27, 20, 0.13);
+  --m-line-on-dark: rgba(251, 246, 236, 0.16);
+  --m-ink-on-dark: #FBF6EC;
+  --m-ink-on-dark-muted: rgba(251, 246, 236, 0.7);
+
+  --m-radius: 20px;
+  --m-radius-sm: 12px;
+  --m-radius-pill: 999px;
+  --m-shadow: 0 4px 24px rgba(33, 27, 20, 0.08);
+  --m-shadow-lg: 0 28px 70px rgba(15, 33, 24, 0.18);
+
+  /* Typography: one premium display serif (large headlines only) +
+     one neutral UI sans (everything else). Both load as Google Fonts
+     variable-ish weight ranges above; if self-hosting for production,
+     use the variable-font (.woff2, `font-variation-settings`) builds
+     of Fraunces and Inter instead of these static-weight @2 requests —
+     same family, fewer HTTP requests, and this token file doesn't need
+     to change either way since it only references family names. */
+  --m-font-display: "Fraunces", "Playfair Display", Georgia, serif;
+  --m-font-body: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+
+  /* Fluid type scale — clamp(min, preferred-vw, max) so hero/H1 sizes
+     scale smoothly between the smallest phone and largest desktop
+     instead of jumping at breakpoints. */
+  --m-text-hero: clamp(2.25rem, 3rem + 3vw, 4.25rem);
+  --m-text-h2: clamp(1.75rem, 1.4rem + 2vw, 2.75rem);
+  --m-text-h3: clamp(1.125rem, 1rem + 0.6vw, 1.375rem);
+  --m-text-lead: clamp(1.0625rem, 1rem + 0.3vw, 1.25rem);
+}

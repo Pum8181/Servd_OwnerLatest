@@ -1,0 +1,1433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Servd: QR Ordering With a Human Check Before It Hits the Kitchen</title>
+<meta name="description" content="Servd is a QR ordering system for independent restaurants. Orders pause for a quick human confirmation before they reach the kitchen, guests get tracked individually at shared tables, and splitting the bill takes one tap. Built in Burnaby, BC for restaurants across Metro Vancouver. No commissions.">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23C1502B'/%3E%3Crect x='16' y='16' width='32' height='32' rx='8' fill='none' stroke='%23FBF6EC' stroke-width='5'/%3E%3Ccircle cx='48' cy='48' r='13' fill='%2345593B' stroke='%23FBF6EC' stroke-width='3'/%3E%3Cpath d='M42 48l4 4 8-8' fill='none' stroke='%23FBF6EC' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+
+<!--
+  ══════════════════════════════════════════════════════════════════════
+  SERVD MARKETING SITE. EDITING GUIDE FOR NON-DEVELOPERS
+  ══════════════════════════════════════════════════════════════════════
+  This whole site is ONE file. To make small changes:
+
+  1. TEXT: find the words you want to change with Ctrl+F, edit them
+     directly between the tags (e.g. between <h1> and </h1>). Don't
+     touch anything starting with "<" or containing "class=".
+
+  2. COLORS: all colors are defined once, near the top of the <style>
+     section below, under ":root {". Change a color there and it
+     updates everywhere automatically.
+
+  3. LOGO: search for "SERVD WORDMARK" below to find the logo markup.
+     It's built with CSS, no image file needed: a rounded terracotta
+     square with a white inner ring (a nod to a QR code's corner
+     markers) and a small olive checkmark badge (the human confirmation
+     step, the same olive used for "Confirmed" states throughout the
+     site). The browser tab icon (favicon) above uses the same design
+     as an inline SVG, so it matches even though it can't be plain CSS.
+
+  4. DEMO FORM EMAIL: the form near the bottom ("Request My Free
+     Demo") submits silently via Formspree (form ID: mgogdjrb) and is
+     delivered to whichever email is registered on that Formspree
+     account (pankaj_singh@servd.tech). To change the destination, log
+     into formspree.io. Nothing in this file needs to change.
+
+  5. CALENDLY LINK: search for "calendly.com/pankaj_singh-servd/30min" with
+     Ctrl+F to find every "Book a Live Session" button (nav, hero,
+     about, and demo section). Replace all of them if you ever change
+     your Calendly username or event type.
+
+  6. FIRST REAL CLIENT: once you sign an actual restaurant, search for
+     "EARLY ACCESS" below. That section currently makes no claims about
+     an existing client on purpose (see the comment above it). Once you
+     have written permission to name a restaurant publicly, that's the
+     section to turn into a real case study.
+  ══════════════════════════════════════════════════════════════════════
+-->
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+
+<style>
+  /* ════════════════════════════════════════════════════════════════
+     COLOR PALETTE: change any value here to re-theme the whole site.
+
+     Reasoning: warm paper and near-black instead of pure white and
+     pure black, because a restaurant tool should feel like a menu,
+     not a spreadsheet. Terracotta as the primary accent for appetite
+     and warmth (the color shows up in tandoor cooking and terracotta
+     serveware, so it reads as food-adjacent, not generic startup
+     orange). Olive is the trust and confirmation color: calm, a
+     little institutional, used anywhere the product is telling you
+     something is correct and locked in. Brass adds a small touch of
+     craft and permanence without tipping into anything gaudy. Inter
+     carries the modern, legible, software feel; Fraunces carries the
+     warmth and editorial food-brand feel. Together they read as
+     "a real tech product built by someone who has actually eaten at
+     your restaurant," which is the whole point.
+     ════════════════════════════════════════════════════════════════ */
+  :root {
+    --ink: #241E17;              /* primary text: warm near-black, not pure black */
+    --ink-muted: #6E6154;
+    --paper: #FBF6EC;             /* page background: warm paper, not white */
+    --paper-deep: #F1E7D5;
+    --surface: #FFFDF8;           /* cards */
+    --line: rgba(36, 30, 23, 0.13);
+
+    --terracotta: #C1502B;        /* primary accent: CTAs, links, headline underline */
+    --terracotta-deep: #8F3A1F;
+    --olive: #45593B;             /* secondary accent: confirmed and success states */
+    --brass: #B98D34;             /* tertiary accent: highlights, hover */
+
+    --radius: 20px;
+    --radius-sm: 12px;
+    --shadow: 0 4px 24px rgba(36, 30, 23, 0.08);
+    --shadow-lg: 0 24px 64px rgba(36, 30, 23, 0.16);
+
+    --font-display: "Fraunces", Georgia, serif;
+    --font-body: "Inter", system-ui, sans-serif;
+    --font-mono: "JetBrains Mono", monospace;
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    * { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+  }
+
+  body {
+    margin: 0;
+    font-family: var(--font-body);
+    background: var(--paper);
+    color: var(--ink);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1, h2, h3, h4 { font-family: var(--font-display); color: var(--ink); margin: 0; line-height: 1.1; }
+  p { margin: 0; }
+  a { color: inherit; }
+  img { max-width: 100%; display: block; }
+  button { font-family: inherit; }
+
+  .skip-link {
+    position: absolute; left: -999px; top: 0;
+    background: var(--ink); color: var(--paper); padding: 0.75rem 1.25rem; z-index: 200;
+  }
+  .skip-link:focus { left: 0; }
+
+  .wrap { max-width: 1140px; margin: 0 auto; padding: 0 1.5rem; }
+  .wrap-narrow { max-width: 760px; margin: 0 auto; padding: 0 1.5rem; }
+
+  section { padding: 5.5rem 0; position: relative; }
+  @media (max-width: 640px) { section { padding: 3.5rem 0; } }
+
+  .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--terracotta-deep);
+    margin-bottom: 1rem;
+  }
+  .eyebrow::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--terracotta); }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-family: var(--font-body);
+    font-weight: 700;
+    font-size: 0.9375rem;
+    padding: 0.9rem 1.75rem;
+    border-radius: 999px;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  /* FIX: hover-lift scoped to real pointer devices only — on touch,
+     :hover applies after a tap and stays "stuck" until the user taps
+     elsewhere, which looks like a layout glitch on mobile/tablet. */
+  @media (hover: hover) and (pointer: fine) {
+    .btn:hover { transform: translateY(-2px); }
+  }
+  .btn-primary { background: var(--terracotta); color: var(--paper); box-shadow: 0 6px 20px rgba(193, 80, 43, 0.35); }
+  .btn-primary:hover { box-shadow: 0 10px 26px rgba(193, 80, 43, 0.45); }
+  .btn-ghost { background: transparent; color: var(--ink); border: 1.5px solid var(--line); }
+  .btn-ghost:hover { border-color: var(--ink); }
+  .btn-lg { padding: 1.05rem 2.1rem; font-size: 1rem; }
+
+  /* Scroll reveal (vanilla IntersectionObserver, no library) */
+  .reveal { opacity: 0; transform: translateY(18px); transition: opacity 0.7s ease, transform 0.7s ease; }
+  .reveal.in-view { opacity: 1; transform: translateY(0); }
+
+  /* ════════════════════════════════════════════════════════════════
+     NAV
+     ════════════════════════════════════════════════════════════════ */
+  .site-nav {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(251, 246, 236, 0.92);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--line);
+  }
+  .nav-inner {
+    max-width: 1140px; margin: 0 auto; padding: 1rem 1.5rem;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  /* SERVD WORDMARK: pure CSS, no image file. Rounded square = a nod to
+     a QR corner marker. Olive checkmark badge = the human confirmation
+     step that makes Servd different. */
+  .wordmark { display: inline-flex; align-items: center; gap: 0.6rem; text-decoration: none; }
+  .wordmark-mark {
+    width: 34px; height: 34px; border-radius: 10px;
+    background: var(--terracotta);
+    position: relative; flex-shrink: 0;
+  }
+  .wordmark-mark::before {
+    content: "";
+    position: absolute; inset: 8px;
+    border: 2.5px solid var(--paper);
+    border-radius: 4px;
+  }
+  .wordmark-mark::after {
+    content: "";
+    position: absolute; right: -4px; bottom: -4px;
+    width: 15px; height: 15px; border-radius: 50%;
+    background: var(--olive);
+    border: 2px solid var(--paper);
+    background-image: linear-gradient(135deg, transparent 40%, var(--paper) 40%, var(--paper) 46%, transparent 46%, transparent 54%, var(--paper) 54%, var(--paper) 60%, transparent 60%);
+  }
+  .wordmark-text { font-family: var(--font-display); font-weight: 700; font-size: 1.375rem; letter-spacing: -0.01em; color: var(--ink); }
+
+  /* FIX (nav overflow bug): gap was 2rem across 8 links, which combined
+     with the logo and CTA button needed roughly 1050px of unbroken
+     width. The switch to desktop nav happened at 900px, so anything
+     from 900px to ~1050px (which includes iPad Pro 12.9" portrait at
+     1024px) wrapped and overlapped, exactly as seen in the reported
+     screenshot. Tightened gap/font-size here, AND raised the
+     mobile<->desktop breakpoint below to compensate. */
+  .nav-links { display: flex; align-items: center; gap: 1.5rem; }
+  .nav-links a { font-size: 0.85rem; font-weight: 600; text-decoration: none; color: var(--ink-muted); position: relative; white-space: nowrap; }
+  .nav-links a::after {
+    content: ""; position: absolute; left: 0; bottom: -6px; width: 0; height: 2px;
+    background: var(--terracotta); transition: width 0.2s ease;
+  }
+  .nav-links a:hover { color: var(--ink); }
+  .nav-links a:hover::after { width: 100%; }
+  .nav-cta { display: none; }
+  .nav-links-desktop { display: none; }
+  .nav-toggle {
+    display: inline-flex; align-items: center; justify-content: center;
+    background: none; border: none; cursor: pointer;
+    width: 44px; height: 44px; /* FIX: was ~38x32px, under the 44x44 minimum tap target */
+  }
+  .nav-toggle span, .nav-toggle span::before, .nav-toggle span::after {
+    display: block; width: 22px; height: 2px; background: var(--ink); position: relative; transition: 0.2s;
+  }
+  .nav-toggle span::before { content: ""; position: absolute; top: -7px; }
+  .nav-toggle span::after { content: ""; position: absolute; top: 7px; }
+
+  .mobile-menu {
+    display: none;
+    flex-direction: column;
+    gap: 1.25rem;
+    padding: 1.5rem;
+    border-top: 1px solid var(--line);
+    background: var(--paper);
+  }
+  .mobile-menu.open { display: flex; }
+  .mobile-menu a { font-weight: 600; text-decoration: none; color: var(--ink); font-size: 1.0625rem; }
+
+  /* FIX: raised from 900px to 1180px. With 8 nav links, this is the
+     narrowest point the full row (logo + links + CTA) reliably fits
+     with breathing room, verified below against every device in this
+     audit: iPad Mini (768), iPad Air (820/1180 landscape), iPad Pro 11"
+     (834/1194 landscape), and iPad Pro 12.9" (1024/1366) all now get the
+     hamburger menu in portrait, and iPad Pro 11"/Air/12.9" in landscape
+     (1180px+) get the full nav with room to spare. */
+  @media (min-width: 1180px) {
+    .nav-cta { display: inline-flex; }
+    .nav-links-desktop { display: flex; }
+    .nav-toggle { display: none; }
+    .mobile-menu { display: none !important; }
+  }
+
+  /* ════════════════════════════════════════════════════════════════
+     HERO
+     ════════════════════════════════════════════════════════════════ */
+  .hero { padding-top: 4.5rem; padding-bottom: 4rem; overflow: hidden; }
+  .hero-grid { display: grid; grid-template-columns: 1fr; gap: 3rem; align-items: center; }
+  @media (min-width: 960px) { .hero-grid { grid-template-columns: 1.05fr 0.95fr; gap: 2rem; } }
+
+  .hero h1 {
+    font-size: clamp(2.25rem, 5.2vw, 3.5rem);
+    font-weight: 600;
+    letter-spacing: -0.015em;
+    margin-bottom: 1.25rem;
+  }
+  .hero h1 em {
+    font-style: normal;
+    font-weight: 700;
+    background: linear-gradient(180deg, transparent 62%, rgba(193, 80, 43, 0.28) 62%);
+  }
+  .hero-sub { font-size: 1.125rem; color: var(--ink-muted); max-width: 34rem; margin-bottom: 2rem; }
+  .hero-ctas { display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.75rem; }
+  .hero-trust { font-size: 0.8125rem; color: var(--ink-muted); font-family: var(--font-mono); }
+  .hero-trust strong { color: var(--terracotta-deep); }
+
+  /* Animated order-ticket hero visual */
+  /* Small safety margin: .ticket is rotated -1.2deg inside .hero, which
+     has overflow:hidden. Rotation pushes the box's corners a few px
+     past its unrotated edges, so on the narrowest screens (iPhone SE)
+     that sliver could get clipped without this padding. */
+  .ticket-stage { display: flex; justify-content: center; padding: 0 6px; }
+  .ticket {
+    width: 100%; max-width: 340px;
+    background: var(--surface);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-lg);
+    padding: 1.5rem 1.5rem 1.75rem;
+    position: relative;
+    transform: rotate(-1.2deg);
+  }
+  .ticket::before, .ticket::after {
+    content: ""; position: absolute; left: 0; right: 0; height: 14px;
+    background: radial-gradient(circle at 10px 7px, transparent 7px, var(--paper) 7.5px) repeat-x;
+    background-size: 22px 14px;
+  }
+  .ticket::before { top: -7px; }
+  .ticket::after { bottom: -7px; transform: rotate(180deg); }
+
+  .ticket-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.25rem; }
+  .ticket-table { font-family: var(--font-mono); font-weight: 700; font-size: 1.0625rem; }
+  .ticket-time { font-family: var(--font-mono); font-size: 0.75rem; color: var(--ink-muted); }
+  .ticket-guests { font-size: 0.75rem; color: var(--ink-muted); margin-bottom: 1rem; }
+  .ticket-guests .g { font-weight: 700; color: var(--ink); }
+
+  .ticket-lines { list-style: none; margin: 0 0 1.25rem; padding: 0; border-top: 1px dashed var(--line); }
+  .ticket-lines li {
+    display: flex; justify-content: space-between; gap: 0.75rem;
+    padding: 0.55rem 0; border-bottom: 1px dashed var(--line);
+    font-size: 0.875rem; opacity: 0; transform: translateX(-6px);
+    transition: opacity 0.4s ease, transform 0.4s ease;
+  }
+  .ticket-lines li.show { opacity: 1; transform: translateX(0); }
+  .ticket-lines li .item-name { font-weight: 600; }
+  .ticket-lines li .item-spice { color: var(--terracotta-deep); font-size: 0.75rem; font-weight: 600; }
+  .ticket-lines li .item-price { font-family: var(--font-mono); font-weight: 600; white-space: nowrap; }
+
+  .ticket-status {
+    display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+    padding: 0.75rem; border-radius: 999px; font-size: 0.8125rem; font-weight: 700;
+    transition: background 0.4s ease, color 0.4s ease;
+  }
+  .ticket-status.pending { background: rgba(184, 106, 12, 0.14); color: #8A5309; }
+  .ticket-status.confirmed { background: rgba(69, 89, 59, 0.15); color: var(--olive); }
+  .ticket-status .dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+  .ticket-status.pending .dot { animation: pulse-dot 1.1s ease-in-out infinite; }
+  @keyframes pulse-dot { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+  .ticket-caption {
+    text-align: center; font-size: 0.8125rem; color: var(--ink-muted); margin-top: 1rem; font-style: italic;
+  }
+
+  /* ════════════════════════════════════════════════════════════════
+     DIFFERENTIATOR / SPLIT COMPARISON
+     ════════════════════════════════════════════════════════════════ */
+  .differentiator { background: var(--paper-deep); }
+  .diff-head { max-width: 42rem; margin-bottom: 3rem; }
+  .diff-head h2 { font-size: clamp(1.75rem, 3.6vw, 2.5rem); font-weight: 600; margin-bottom: 1rem; }
+  .diff-head p { color: var(--ink-muted); font-size: 1.0625rem; }
+
+  .diff-cols { display: grid; grid-template-columns: 1fr; gap: 1.5rem; }
+  @media (min-width: 800px) { .diff-cols { grid-template-columns: 1fr 1fr; } }
+  .diff-col { background: var(--surface); border-radius: var(--radius); padding: 2rem; border: 1px solid var(--line); }
+  .diff-col.is-servd { border: 2px solid var(--terracotta); box-shadow: var(--shadow); }
+  .diff-col h3 { font-size: 1.125rem; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.5rem; }
+  .diff-col ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.875rem; }
+  .diff-col li { font-size: 0.9375rem; display: flex; gap: 0.65rem; align-items: flex-start; }
+  .diff-col.is-other li { color: var(--ink-muted); }
+  .diff-col.is-other li::before { content: "✕"; color: var(--ink-muted); flex-shrink: 0; }
+  .diff-col.is-servd li::before { content: "✓"; color: var(--olive); font-weight: 700; flex-shrink: 0; }
+
+  /* ════════════════════════════════════════════════════════════════
+     HOW IT WORKS: numbered "courses" strip
+     ════════════════════════════════════════════════════════════════ */
+  .courses { display: grid; grid-template-columns: 1fr; gap: 0; margin-top: 3rem; }
+  @media (min-width: 860px) { .courses { grid-template-columns: repeat(4, 1fr); } }
+  .course {
+    padding: 1.75rem 1.5rem;
+    border-top: 1px solid var(--line);
+    position: relative;
+  }
+  @media (min-width: 860px) {
+    .course { border-top: none; border-left: 1px solid var(--line); }
+    .course:first-child { border-left: none; }
+  }
+  .course-num {
+    font-family: var(--font-display); font-size: 2.5rem; font-weight: 600;
+    color: var(--terracotta); opacity: 0.35; line-height: 1; margin-bottom: 0.75rem;
+  }
+  .course h3 { font-size: 1.0625rem; margin-bottom: 0.5rem; }
+  .course p { font-size: 0.9rem; color: var(--ink-muted); }
+
+  /* ════════════════════════════════════════════════════════════════
+     FEATURE MENU: menu-style list with dotted leaders
+     ════════════════════════════════════════════════════════════════ */
+  .menu-entries { max-width: 780px; margin: 3rem auto 0; }
+  .menu-entry { padding: 1.75rem 0; border-bottom: 1px solid var(--line); }
+  .menu-entry:first-child { border-top: 1px solid var(--line); }
+  .menu-entry-head {
+    display: flex; align-items: baseline; gap: 0.75rem; margin-bottom: 0.5rem;
+    flex-wrap: wrap; /* FIX: was a rigid nowrap row that overflowed past ~375px on longer entries */
+  }
+  .menu-entry-head h3 { font-size: 1.1875rem; white-space: nowrap; }
+  .menu-entry-leader { flex: 1; min-width: 2rem; border-bottom: 2px dotted var(--line); transform: translateY(-0.35rem); }
+  .menu-entry-tag {
+    font-family: var(--font-mono); font-size: 0.6875rem; font-weight: 700; letter-spacing: 0.04em;
+    text-transform: uppercase; color: var(--terracotta-deep);
+    background: rgba(193, 80, 43, 0.1); padding: 0.25rem 0.6rem; border-radius: 999px; white-space: nowrap;
+  }
+  .menu-entry p { color: var(--ink-muted); font-size: 0.9625rem; max-width: 34rem; }
+
+  /* FIX: below ~440px even "h3 nowrap + dotted leader + tag" can't fit on
+     one line (e.g. "Built-In QR Generator" + "No third-party tools").
+     Drop the decorative leader and let the tag wrap to its own line
+     instead of overlapping the heading text. */
+  @media (max-width: 440px) {
+    .menu-entry-head { row-gap: 0.4rem; }
+    .menu-entry-head h3 { white-space: normal; flex-basis: 100%; }
+    .menu-entry-leader { display: none; }
+  }
+
+  /* ════════════════════════════════════════════════════════════════
+     WHY LOCAL
+     ════════════════════════════════════════════════════════════════ */
+  .local { background: var(--ink); color: var(--paper); }
+  .local .eyebrow { color: var(--brass); }
+  .local .eyebrow::before { background: var(--brass); }
+  .local h2 { color: var(--paper); font-size: clamp(1.75rem, 3.6vw, 2.5rem); font-weight: 600; max-width: 40rem; margin-bottom: 1.25rem; }
+  .local-sub { color: rgba(251, 246, 236, 0.72); font-size: 1.0625rem; max-width: 38rem; margin-bottom: 1.5rem; }
+  .local-pain { color: rgba(251, 246, 236, 0.72); font-size: 1rem; max-width: 40rem; margin-bottom: 3rem; }
+
+  .local-table { width: 100%; border-collapse: collapse; margin-top: 1rem; font-size: 0.9375rem; }
+  .local-table th, .local-table td { padding: 1rem 1rem; text-align: left; border-bottom: 1px solid rgba(251, 246, 236, 0.14); }
+  .local-table th { font-family: var(--font-mono); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: rgba(251, 246, 236, 0.55); font-weight: 600; }
+  .local-table td.servd-cell { color: var(--brass); font-weight: 700; }
+  .local-table tr:last-child td { border-bottom: none; }
+  .local-table-wrap { overflow-x: auto; }
+
+  .founder-line {
+    margin-top: 2.5rem; padding-top: 2rem; border-top: 1px solid rgba(251, 246, 236, 0.14);
+    display: flex; gap: 1rem; align-items: flex-start; flex-wrap: wrap;
+  }
+  .founder-avatar {
+    width: 44px; height: 44px; border-radius: 50%; background: var(--terracotta);
+    display: flex; align-items: center; justify-content: center; font-family: var(--font-display);
+    font-weight: 700; flex-shrink: 0; font-size: 0.9rem;
+  }
+  .founder-line p { color: rgba(251, 246, 236, 0.75); font-size: 0.9375rem; max-width: 34rem; }
+  .founder-line strong { color: var(--paper); }
+
+  /* ════════════════════════════════════════════════════════════════
+     ABOUT / FOUNDER STORY
+     ════════════════════════════════════════════════════════════════ */
+  .about-story { color: var(--ink-muted); font-size: 1.0625rem; max-width: 42rem; }
+  .about-story p + p { margin-top: 1.1rem; }
+  .about-story strong { color: var(--ink); }
+
+  /* ════════════════════════════════════════════════════════════════
+     TRUST / SKEPTICISM
+     ════════════════════════════════════════════════════════════════ */
+  .trust-grid { display: grid; grid-template-columns: 1fr; gap: 1.5rem; margin-top: 2.75rem; }
+  /* FIX: was a single 780px jump straight to 3 columns, which skipped
+     right past the 768px iPad-portrait breakpoint (768 < 780) and left
+     three cards stacked full-height on a screen with room for two. */
+  @media (min-width: 600px) and (max-width: 899px) { .trust-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (min-width: 900px) { .trust-grid { grid-template-columns: repeat(3, 1fr); } }
+  .trust-card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 1.75rem; }
+  .trust-card h3 { font-size: 1.0625rem; margin-bottom: 0.65rem; }
+  .trust-card p { font-size: 0.9rem; color: var(--ink-muted); }
+  .trust-card .num { font-family: var(--font-mono); font-size: 0.75rem; color: var(--terracotta-deep); font-weight: 700; margin-bottom: 0.75rem; display: block; }
+
+
+  /* ════════════════════════════════════════════════════════════════
+     PRICING
+     ════════════════════════════════════════════════════════════════ */
+  .pricing-grid { display: grid; grid-template-columns: 1fr; gap: 1.5rem; margin-top: 3rem; }
+  @media (min-width: 860px) { .pricing-grid { grid-template-columns: repeat(3, 1fr); } }
+  .price-card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 2rem; display: flex; flex-direction: column;
+  }
+  .price-card.featured { border: 2px solid var(--terracotta); box-shadow: var(--shadow-lg); position: relative; }
+  .price-card.featured::before {
+    content: "MOST OWNERS START HERE"; position: absolute; top: -13px; left: 2rem;
+    background: var(--terracotta); color: var(--paper); font-family: var(--font-mono);
+    font-size: 0.625rem; font-weight: 700; letter-spacing: 0.05em; padding: 0.3rem 0.75rem; border-radius: 999px;
+  }
+  .price-name { font-size: 0.875rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--terracotta-deep); margin-bottom: 0.75rem; }
+  .price-amount { font-family: var(--font-display); font-size: 2.5rem; font-weight: 600; margin-bottom: 0.25rem; }
+  .price-amount span { font-family: var(--font-body); font-size: 0.9375rem; font-weight: 500; color: var(--ink-muted); }
+  .price-note { font-size: 0.8125rem; color: var(--ink-muted); margin-bottom: 1.5rem; }
+  .price-card ul { list-style: none; margin: 0 0 1.75rem; padding: 0; display: flex; flex-direction: column; gap: 0.75rem; flex: 1; }
+  .price-card li { font-size: 0.9rem; display: flex; gap: 0.6rem; align-items: flex-start; }
+  .price-card li::before { content: "✓"; color: var(--olive); font-weight: 700; flex-shrink: 0; }
+
+  .pricing-note-box {
+    margin: 2.75rem auto 0; max-width: 44rem; text-align: center;
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 2.25rem 2rem;
+  }
+  .pricing-note-box p { color: var(--ink-muted); font-size: 1.0625rem; margin-bottom: 1rem; }
+  .pricing-note-box p.pricing-note-small { font-size: 0.875rem; font-style: italic; margin-bottom: 1.5rem; }
+  .pricing-note-box p.pricing-note-small strong { color: var(--terracotta-deep); font-style: normal; }
+  .pricing-note-actions { display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap; }
+
+  /* ════════════════════════════════════════════════════════════════
+     FAQ (accordion)
+     ════════════════════════════════════════════════════════════════ */
+  .faq-list { max-width: 760px; margin: 3rem auto 0; }
+  .faq-item { border-bottom: 1px solid var(--line); }
+  .faq-item:first-child { border-top: 1px solid var(--line); }
+  .faq-q {
+    width: 100%; text-align: left; background: none; border: none; cursor: pointer;
+    display: flex; justify-content: space-between; align-items: center; gap: 1rem;
+    padding: 1.375rem 0; font-family: var(--font-body); font-size: 1.0625rem; font-weight: 600; color: var(--ink);
+  }
+  .faq-q .plus { font-size: 1.5rem; color: var(--terracotta); font-weight: 400; flex-shrink: 0; transition: transform 0.25s ease; line-height: 1; }
+  .faq-item[data-open="true"] .plus { transform: rotate(45deg); }
+  .faq-a { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; }
+  .faq-a-inner { padding-bottom: 1.375rem; color: var(--ink-muted); font-size: 0.9625rem; max-width: 34rem; }
+
+  /* ════════════════════════════════════════════════════════════════
+     FINAL CTA / DEMO FORM
+     ════════════════════════════════════════════════════════════════ */
+  .cta-final { background: var(--paper-deep); }
+  .cta-final-inner { display: grid; grid-template-columns: 1fr; gap: 3rem; }
+  @media (min-width: 900px) { .cta-final-inner { grid-template-columns: 0.9fr 1.1fr; align-items: start; } }
+  .cta-final h2 { font-size: clamp(1.875rem, 3.8vw, 2.75rem); font-weight: 600; margin-bottom: 1.25rem; }
+  .cta-final p { color: var(--ink-muted); font-size: 1.0625rem; max-width: 30rem; margin-bottom: 1.5rem; }
+  .cta-final-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.65rem; }
+  .cta-final-list li { font-size: 0.9375rem; display: flex; gap: 0.6rem; align-items: flex-start; }
+  .cta-final-list li::before { content: "✓"; color: var(--olive); font-weight: 700; }
+
+  .demo-form { background: var(--surface); border-radius: var(--radius); padding: 2rem; box-shadow: var(--shadow-lg); border: 1px solid var(--line); }
+  .form-row { display: grid; grid-template-columns: 1fr; gap: 1rem; margin-bottom: 1rem; }
+  @media (min-width: 520px) { .form-row.two-col { grid-template-columns: 1fr 1fr; } }
+  .form-field label { display: block; font-size: 0.8125rem; font-weight: 600; margin-bottom: 0.4rem; color: var(--ink); }
+  .form-field input, .form-field textarea {
+    width: 100%; font-family: var(--font-body); font-size: 0.9375rem; padding: 0.75rem 0.9rem;
+    border: 1.5px solid var(--line); border-radius: var(--radius-sm); background: var(--paper); color: var(--ink);
+  }
+  .form-field input:focus, .form-field textarea:focus { outline: none; border-color: var(--terracotta); }
+  .demo-form .btn { width: 100%; margin-top: 0.5rem; }
+  .form-success, .form-error {
+    display: none; padding: 0.9rem 1rem; border-radius: var(--radius-sm); font-size: 0.875rem; margin-top: 1rem;
+  }
+  .form-success.show, .form-error.show { display: block; }
+  .form-success { background: rgba(69, 89, 59, 0.12); color: var(--olive); }
+  .form-error { background: rgba(193, 80, 43, 0.1); color: var(--terracotta-deep); }
+
+  /* ════════════════════════════════════════════════════════════════
+     FOOTER
+     ════════════════════════════════════════════════════════════════ */
+  footer { padding: 3rem 0 2.5rem; border-top: 1px solid var(--line); }
+  .footer-inner { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 2rem; align-items: flex-start; }
+  .footer-tagline { font-family: var(--font-display); font-size: 1.0625rem; color: var(--terracotta-deep); margin-top: 0.85rem; }
+  .footer-brand p { color: var(--ink-muted); font-size: 0.875rem; margin-top: 0.5rem; max-width: 20rem; }
+  .footer-links { display: flex; gap: 2rem; flex-wrap: wrap; }
+  .footer-links a { font-size: 0.875rem; font-weight: 600; text-decoration: none; color: var(--ink-muted); }
+  .footer-links a:hover { color: var(--ink); }
+  .footer-bottom { margin-top: 2.5rem; padding-top: 1.5rem; border-top: 1px solid var(--line); font-size: 0.8125rem; color: var(--ink-muted); font-family: var(--font-mono); }
+
+  /* ════════════════════════════════════════════════════════════════
+     CONTACT (NEW)
+     ════════════════════════════════════════════════════════════════ */
+  .contact-email {
+    display: inline-block;
+    font-family: var(--font-display);
+    font-size: clamp(1.375rem, 4vw, 2.125rem);
+    font-weight: 600;
+    color: var(--terracotta);
+    text-decoration: none;
+    border-bottom: 2px solid transparent;
+    transition: border-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+    margin-top: 1.5rem;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .contact-email:hover { border-color: var(--terracotta); color: var(--terracotta-deep); transform: translateY(-2px); }
+  }
+
+  /* ════════════════════════════════════════════════════════════════
+     PRODUCT OVERVIEW: customer screen vs. owner dashboard (NEW)
+     ════════════════════════════════════════════════════════════════ */
+  .overview { background: var(--paper-deep); }
+  .overview-cols { display: grid; grid-template-columns: 1fr; gap: 1.75rem; margin-top: 3rem; }
+  @media (min-width: 860px) { .overview-cols { grid-template-columns: 1fr 1fr; } }
+
+  .overview-col {
+    background: var(--surface); border-radius: var(--radius); padding: 1.75rem;
+    border: 1px solid var(--line); box-shadow: var(--shadow);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .overview-col:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); }
+  }
+  @media (min-width: 860px) { .overview-col:nth-child(2) { transition-delay: 0.1s; } }
+
+  .overview-col-label {
+    font-family: var(--font-mono); font-size: 0.75rem; font-weight: 700; letter-spacing: 0.06em;
+    text-transform: uppercase; color: var(--terracotta-deep); margin-bottom: 0.5rem;
+    display: flex; align-items: center; gap: 0.5rem;
+  }
+  .overview-col-label .live-dot {
+    width: 6px; height: 6px; border-radius: 50%; background: var(--olive);
+    animation: overview-pulse 1.3s ease-in-out infinite;
+  }
+  @keyframes overview-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+  .overview-col h3 { font-size: 1.25rem; margin-bottom: 1.1rem; }
+
+  /* Phone mockup: what the guest sees */
+  .phone-mock {
+    background: var(--ink); border-radius: 20px; padding: 0.6rem; margin-bottom: 1.25rem;
+    box-shadow: var(--shadow-lg);
+  }
+  .phone-mock-notch { width: 34%; height: 5px; background: rgba(251, 246, 236, 0.25); border-radius: 3px; margin: 0 auto 0.5rem; }
+  .phone-mock-screen { background: var(--paper); border-radius: 14px; padding: 1rem 1rem 0.85rem; }
+  .phone-mock-header { font-family: var(--font-mono); font-size: 0.6875rem; color: var(--ink-muted); margin-bottom: 0.7rem; }
+  .phone-mock-item {
+    display: flex; justify-content: space-between; align-items: center; gap: 0.5rem;
+    font-size: 0.8125rem; padding: 0.45rem 0; border-bottom: 1px dashed var(--line);
+  }
+  .phone-mock-item em { font-style: normal; color: var(--terracotta-deep); font-size: 0.6875rem; font-weight: 600; margin-left: 0.3rem; }
+  .phone-mock-item.is-soldout { opacity: 0.5; }
+  .phone-mock-qty {
+    font-family: var(--font-mono); font-weight: 700; width: 20px; height: 20px; border-radius: 50%;
+    background: var(--terracotta); color: var(--paper); display: inline-flex; align-items: center; justify-content: center;
+    font-size: 0.6875rem; flex-shrink: 0;
+  }
+  .phone-mock-tag {
+    font-family: var(--font-mono); font-size: 0.625rem; font-weight: 700; text-transform: uppercase;
+    color: var(--ink-muted); background: rgba(36, 30, 23, 0.08); padding: 0.15rem 0.4rem; border-radius: 999px; flex-shrink: 0;
+  }
+  .phone-mock-cta {
+    margin-top: 0.75rem; background: var(--terracotta); color: var(--paper); text-align: center;
+    font-size: 0.75rem; font-weight: 700; padding: 0.6rem; border-radius: 999px;
+  }
+
+  /* Dashboard mockup: what the owner sees */
+  .dash-mock { background: var(--paper); border-radius: 14px; padding: 1rem; margin-bottom: 1.25rem; border: 1px solid var(--line); }
+  .dash-mock-header {
+    display: flex; justify-content: space-between; align-items: center;
+    font-family: var(--font-mono); font-size: 0.6875rem; font-weight: 700; color: var(--ink-muted);
+    text-transform: uppercase; letter-spacing: 0.04em; padding: 0.5rem 0 0.35rem;
+  }
+  .dash-mock-header:first-child { padding-top: 0; }
+  .dash-mock-count {
+    background: var(--terracotta); color: var(--paper); border-radius: 999px;
+    width: 18px; height: 18px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.6875rem;
+  }
+  .dash-mock-card {
+    display: flex; justify-content: space-between; align-items: center; gap: 0.5rem;
+    background: var(--surface); border: 1px solid var(--line); border-radius: 10px;
+    padding: 0.55rem 0.75rem; margin-bottom: 0.4rem; font-size: 0.8125rem; font-weight: 600;
+  }
+  .dash-mock-badge {
+    font-family: var(--font-mono); font-size: 0.625rem; font-weight: 700; color: var(--terracotta-deep);
+    background: rgba(193, 80, 43, 0.1); padding: 0.15rem 0.45rem; border-radius: 999px;
+  }
+
+  .overview-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.65rem; }
+  .overview-list li { font-size: 0.9rem; display: flex; gap: 0.6rem; align-items: flex-start; }
+  .overview-list li::before { content: "✓"; color: var(--olive); font-weight: 700; flex-shrink: 0; }
+
+  .overview-footer {
+    margin-top: 2.75rem; text-align: center; display: flex; flex-direction: column;
+    align-items: center; gap: 1rem;
+  }
+  .overview-footer p { color: var(--ink-muted); font-size: 1rem; max-width: 34rem; }
+  .overview-footer strong { color: var(--terracotta-deep); }
+</style>
+</head>
+<body>
+<a href="#main" class="skip-link">Skip to main content</a>
+
+<nav class="site-nav" aria-label="Primary">
+  <div class="nav-inner">
+    <a href="#top" class="wordmark" aria-label="Servd home">
+      <span class="wordmark-mark" aria-hidden="true"></span>
+      <span class="wordmark-text">Servd</span>
+    </a>
+    <div class="nav-links nav-links-desktop">
+      <a href="#how-it-works">Product</a>
+      <a href="#why-local">Why Local</a>
+      <a href="#about">About</a>
+      <a href="#services">Services</a>
+      <a href="#early-access">Early Access</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#faq">FAQ</a>
+      <a href="#contact">Contact</a>
+    </div>
+    <a href="https://calendly.com/pankaj_singh-servd/30min" class="btn btn-primary nav-cta" target="_blank" rel="noopener">Book a Live Session</a>
+    <button type="button" class="nav-toggle" id="navToggle" aria-label="Open menu" aria-expanded="false" aria-controls="mobileMenu">
+      <span></span>
+    </button>
+  </div>
+  <div class="mobile-menu" id="mobileMenu">
+    <a href="#how-it-works">Product</a>
+    <a href="#why-local">Why Local</a>
+    <a href="#about">About</a>
+    <a href="#services">Services</a>
+    <a href="#early-access">Early Access</a>
+    <a href="#pricing">Pricing</a>
+    <a href="#faq">FAQ</a>
+    <a href="#contact">Contact</a>
+    <a href="https://calendly.com/pankaj_singh-servd/30min" class="btn btn-primary" target="_blank" rel="noopener">Book a Live Session</a>
+  </div>
+</nav>
+
+<main id="main">
+
+  <!-- ═══════════════════════════ HERO ═══════════════════════════ -->
+  <header class="hero" id="top">
+    <div class="wrap hero-grid">
+      <div>
+        <p class="eyebrow">QR Ordering Built in Burnaby, BC</p>
+        <h1>Your kitchen never sees an order <em>until a person checks it first.</em></h1>
+        <p class="hero-sub">
+          Most QR ordering tools send an order straight to the kitchen the second a guest taps submit, typos and all. Servd adds one extra step: every order sits in a confirmation queue first, so a real person can catch the double tap, the wrong spice level, or the order that was meant for table 6 and landed on table 9. Guests ordering from the same table get tracked individually, and splitting the bill afterward takes one tap instead of a server working it out by hand.
+        </p>
+        <div class="hero-ctas">
+          <a href="https://calendly.com/pankaj_singh-servd/30min" class="btn btn-primary btn-lg" target="_blank" rel="noopener">Book a Live Session</a>
+          <a href="#demo" class="btn btn-ghost btn-lg">Or request a demo ↓</a>
+        </div>
+        <p class="hero-trust">Now booking founding restaurants across <strong>Metro Vancouver, BC</strong> · No commissions, ever.</p>
+      </div>
+
+      <div class="ticket-stage" aria-hidden="true">
+        <div class="ticket">
+          <div class="ticket-head">
+            <span class="ticket-table">TABLE 5</span>
+            <span class="ticket-time" id="ticketTime">7:42 PM</span>
+          </div>
+          <p class="ticket-guests">Ordering: <span class="g">Alex</span> &amp; <span class="g">Sam</span></p>
+          <ul class="ticket-lines" id="ticketLines">
+            <li><span><span class="item-name">1× Chicken Biryani</span> <span class="item-spice">Hot</span></span><span class="item-price">$21.95</span></li>
+            <li><span><span class="item-name">1× Butter Chicken</span> <span class="item-spice">Mild</span></span><span class="item-price">$19.95</span></li>
+            <li><span><span class="item-name">2× Garlic Naan</span></span><span class="item-price">$9.90</span></li>
+          </ul>
+          <div class="ticket-status pending" id="ticketStatus">
+            <span class="dot" aria-hidden="true"></span>
+            <span id="ticketStatusText">Needs Confirmation</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="ticket-caption wrap" style="text-align:center; max-width: 760px; margin: 2rem auto 0;">This is a live-feeling mock of the actual Servd order flow, not a screenshot.</p>
+  </header>
+
+  <!-- ═══════════════════ PRODUCT OVERVIEW (NEW) ═══════════════════
+       Two mockups, side by side: the customer-facing ordering screen
+       and the owner's live dashboard. Both are stylized recreations of
+       the real product (index-v2.html and owner-v2.html in this same
+       project), not stock art, so this is honest about what a
+       restaurant is actually signing up for. -->
+  <section class="overview reveal" aria-labelledby="overview-heading">
+    <div class="wrap">
+      <div class="diff-head">
+        <p class="eyebrow">See The Whole Product</p>
+        <h2 id="overview-heading">Two screens. One system. Built to work together.</h2>
+        <p>Servd isn't just an order form bolted onto a QR code. It's the screen your guest taps, and the live control panel you run your shift from, and they were designed as one product, not two.</p>
+      </div>
+
+      <div class="overview-cols">
+        <div class="overview-col">
+          <p class="overview-col-label"><span class="live-dot" aria-hidden="true"></span>What Your Customers See</p>
+          <h3>Scan, order, done.</h3>
+          <div class="phone-mock" aria-hidden="true">
+            <div class="phone-mock-notch"></div>
+            <div class="phone-mock-screen">
+              <div class="phone-mock-header">TABLE 5 · SCAN TO ORDER</div>
+              <div class="phone-mock-item"><span>1× Chicken Biryani<em>Hot</em></span><span class="phone-mock-qty">1</span></div>
+              <div class="phone-mock-item"><span>1× Butter Chicken<em>Mild</em></span><span class="phone-mock-qty">1</span></div>
+              <div class="phone-mock-item is-soldout"><span>Garlic Naan</span><span class="phone-mock-tag">Sold out</span></div>
+              <div class="phone-mock-cta">Send to kitchen · $41.90</div>
+            </div>
+          </div>
+          <ul class="overview-list">
+            <li>No app to download, it opens straight in their phone's browser</li>
+            <li>Spice levels, sold-out items, and today's markdowns, all live</li>
+            <li>One tap to order, one tap to split the bill afterward</li>
+          </ul>
+        </div>
+
+        <div class="overview-col">
+          <p class="overview-col-label"><span class="live-dot" aria-hidden="true"></span>What You See As The Owner</p>
+          <h3>Your whole floor, at a glance.</h3>
+          <div class="dash-mock" aria-hidden="true">
+            <div class="dash-mock-header"><span>🟡 Pending</span><span class="dash-mock-count">2</span></div>
+            <div class="dash-mock-card"><span>Table 5</span><span class="dash-mock-badge">Split by item</span></div>
+            <div class="dash-mock-card"><span>Table 9</span><span class="dash-mock-badge">One bill</span></div>
+            <div class="dash-mock-header"><span>🔵 In Progress</span><span class="dash-mock-count">1</span></div>
+            <div class="dash-mock-card"><span>Table 3</span><span class="dash-mock-badge">Split equally</span></div>
+          </div>
+          <ul class="overview-list">
+            <li>Every order pauses for your confirmation before the kitchen sees it</li>
+            <li>See who ordered what, and how they want the bill split, at a glance</li>
+            <li>Clear a cancelled order off your board without losing the record</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="overview-footer">
+        <p>This isn't a slide deck mockup. Every screen above is a real, working build: the ordering flow, the confirmation step, the split billing, all of it runs today. <strong>Book a call and I'll show it to you live.</strong></p>
+        <a href="https://calendly.com/pankaj_singh-servd/30min" class="btn btn-primary" target="_blank" rel="noopener">See It Live on a Call</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════ THE DIFFERENTIATOR ═══════════════════ -->
+  <section class="differentiator reveal" aria-labelledby="diff-heading">
+    <div class="wrap">
+      <div class="diff-head">
+        <p class="eyebrow">What Actually Makes Servd Different</p>
+        <h2 id="diff-heading">Every other QR tool fires orders straight into your kitchen. Servd pauses first.</h2>
+        <p>Speed is easy to build. Getting the order right before your line cook ever sees it is the part nobody else bothered to build.</p>
+      </div>
+      <div class="diff-cols">
+        <div class="diff-col is-other">
+          <h3>🏭 Typical QR ordering tools</h3>
+          <ul>
+            <li>Order hits the kitchen the instant it's placed, mistakes and all</li>
+            <li>No record of who at the table ordered what</li>
+            <li>Splitting a bill still means a server with a calculator</li>
+            <li>Built for chains, priced and supported like it</li>
+          </ul>
+        </div>
+        <div class="diff-col is-servd">
+          <h3>🍽️ Servd</h3>
+          <ul>
+            <li>Every order pauses in a "Needs Confirmation" queue for a human check first</li>
+            <li>Per-guest tagging, even across separate phones at one table</li>
+            <li>Bill together, split evenly, or split per person, in one tap</li>
+            <li>Built for one independent restaurant at a time, starting with yours</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════ HOW IT WORKS ═══════════════════════ -->
+  <section id="how-it-works" class="reveal" aria-labelledby="how-heading">
+    <div class="wrap">
+      <div class="diff-head" style="margin-bottom: 0;">
+        <p class="eyebrow">How A Table Becomes A Paid Check</p>
+        <h2 id="how-heading">Four steps. No app. No POS overhaul.</h2>
+      </div>
+      <div class="courses">
+        <div class="course">
+          <div class="course-num">01</div>
+          <h3>Guest scans and orders</h3>
+          <p>They scan the table's QR, see your live menu, pick spice levels, and tag their name, all from their own phone, no app to install.</p>
+        </div>
+        <div class="course">
+          <div class="course-num">02</div>
+          <h3>It pauses for you</h3>
+          <p>The order lands in your "Needs Confirmation" queue, kept clearly separate from anything already headed to the kitchen.</p>
+        </div>
+        <div class="course">
+          <div class="course-num">03</div>
+          <h3>One tap, it's confirmed</h3>
+          <p>Review it, fix anything wrong, tap Confirm. It's timestamped, and now it's genuinely in your kitchen's queue.</p>
+        </div>
+        <div class="course">
+          <div class="course-num">04</div>
+          <h3>Bill however they want</h3>
+          <p>Together, split evenly, or split per person, chosen in one tap, and displayed clearly enough to read aloud at the table.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════ FEATURE MENU ═══════════════════════ -->
+  <section class="reveal" aria-labelledby="features-heading">
+    <div class="wrap">
+      <div class="diff-head" style="margin-bottom: 0;">
+        <p class="eyebrow">The Full Menu</p>
+        <h2 id="features-heading">Everything on the table, plainly stated.</h2>
+      </div>
+
+      <div class="menu-entries">
+        <article class="menu-entry">
+          <div class="menu-entry-head">
+            <h3>Spice &amp; Variant Selector</h3>
+            <span class="menu-entry-leader" aria-hidden="true"></span>
+            <span class="menu-entry-tag">Per item</span>
+          </div>
+          <p>Mild, Medium, Hot, Extra Hot. Set per dish, with an optional price bump per level, so upsells happen automatically instead of at the register.</p>
+        </article>
+
+        <article class="menu-entry">
+          <div class="menu-entry-head">
+            <h3>Server Confirmation Step</h3>
+            <span class="menu-entry-leader" aria-hidden="true"></span>
+            <span class="menu-entry-tag">Core to Servd</span>
+          </div>
+          <p>Nothing reaches your kitchen automatically. A person reviews, edits if needed, and taps Confirm, catching mis-taps before they become wasted food.</p>
+        </article>
+
+        <article class="menu-entry">
+          <div class="menu-entry-head">
+            <h3>Per-Guest Order Tracking</h3>
+            <span class="menu-entry-leader" aria-hidden="true"></span>
+            <span class="menu-entry-tag">Shared tables</span>
+          </div>
+          <p>Know exactly who ordered what, even when everyone at the table scanned the same QR code from their own phone.</p>
+        </article>
+
+        <article class="menu-entry">
+          <div class="menu-entry-head">
+            <h3>Flexible Split Billing</h3>
+            <span class="menu-entry-leader" aria-hidden="true"></span>
+            <span class="menu-entry-tag">One tap</span>
+          </div>
+          <p>Together, split evenly, or split per person, chosen by your server at confirmation time. No table-side math required.</p>
+        </article>
+
+        <article class="menu-entry">
+          <div class="menu-entry-head">
+            <h3>Live Sold-Out &amp; Markdown</h3>
+            <span class="menu-entry-leader" aria-hidden="true"></span>
+            <span class="menu-entry-tag">Instant</span>
+          </div>
+          <p>Flip a switch and an item disappears from every phone at every table, instantly. Discount tonight's last few specials without reprinting a thing.</p>
+        </article>
+
+        <article class="menu-entry">
+          <div class="menu-entry-head">
+            <h3>Built-In QR Generator</h3>
+            <span class="menu-entry-leader" aria-hidden="true"></span>
+            <span class="menu-entry-tag">No third-party tools</span>
+          </div>
+          <p>Generate, print, or regenerate every table's QR code from inside your own dashboard, even if your hosting URL ever changes.</p>
+        </article>
+
+        <article class="menu-entry">
+          <div class="menu-entry-head">
+            <h3>Full Edit Audit Trail</h3>
+            <span class="menu-entry-leader" aria-hidden="true"></span>
+            <span class="menu-entry-tag">Accountability</span>
+          </div>
+          <p>Every change to a live order is timestamped, so there's always a record of exactly who changed what, and when.</p>
+        </article>
+
+        <article class="menu-entry">
+          <div class="menu-entry-head">
+            <h3>Fully White-Labeled</h3>
+            <span class="menu-entry-leader" aria-hidden="true"></span>
+            <span class="menu-entry-tag">Your brand</span>
+          </div>
+          <p>One config file controls your name, logo, and colors. Same reliable system underneath, it just looks and feels like yours.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════ WHY LOCAL ═══════════════════════════ -->
+  <section id="why-local" class="local reveal" aria-labelledby="local-heading">
+    <div class="wrap">
+      <p class="eyebrow">The Local Wedge</p>
+      <h2 id="local-heading">Built five minutes from your restaurant, not five time zones away.</h2>
+      <p class="local-sub">National platforms like Toast, Square, iShopo, and SimpleQR are built for scale: thousands of locations, call-center support, and pricing that takes a cut of every order you ring in. Servd is built for one independent restaurant at a time, starting with yours.</p>
+      <p class="local-pain">If you're running a family restaurant anywhere in Metro Vancouver, you already know the problems a generic platform doesn't solve: a Friday dinner rush with two servers covering the whole floor, a table of eight asking to split four ways at the end of the night, and a kitchen that overproduces the daily special because nobody had a spare minute to update the count. Servd was built around those specific problems, not a generic feature list written for a boardroom.</p>
+
+      <div class="local-table-wrap">
+        <table class="local-table">
+          <thead>
+            <tr><th scope="col">&nbsp;</th><th scope="col">National platforms</th><th scope="col">Servd</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Per-order commission</td><td>Often 1 to 3%+ per transaction</td><td class="servd-cell">$0, ever</td></tr>
+            <tr><td>Who answers when something breaks</td><td>A support queue</td><td class="servd-cell">The person who built it</td></tr>
+            <tr><td>Server confirmation step</td><td>Not typically offered</td><td class="servd-cell">Built in from day one</td></tr>
+            <tr><td>Per-guest order tracking</td><td>Rare or add-on</td><td class="servd-cell">Included</td></tr>
+            <tr><td>Where the company is based</td><td>Toronto, SF, or further</td><td class="servd-cell">Burnaby, BC</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="founder-line">
+        <span class="founder-avatar" aria-hidden="true">PS</span>
+        <p><strong>This is a real, hands-on independent practice</strong>, not a call center with a script. My name is Pankaj Singh, and if you email or call, you're talking to me directly: the person who designs, builds, and maintains the system, based right here in Metro Vancouver.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════ ABOUT / WHY I BUILT THIS ═══════════════════════════ -->
+  <section id="about" class="reveal" aria-labelledby="about-heading">
+    <div class="wrap">
+      <div class="diff-head" style="margin-bottom: 0;">
+        <p class="eyebrow">Why I Built This</p>
+        <h2 id="about-heading">I got tired of watching small restaurants get treated like an afterthought.</h2>
+      </div>
+
+      <div class="about-story" style="margin-top: 2rem;">
+        <p>I'm Pankaj Singh, a software developer and designer based in Burnaby, BC. I started building Servd after watching a few independent restaurants near me get boxed into ordering platforms that were clearly designed for chains: steep per-order fees, generic branding, and support that meant filing a ticket and waiting.</p>
+        <p>None of that made sense for a twelve-table restaurant run by one family wearing five different jobs on a Friday night. So I built something smaller on purpose. No commission on your sales, no call center, and no bloated feature list you'll never open. Just the two things that actually matter at a busy table: someone checking the order before it hits the kitchen, and a bill that splits the way your guests actually want it to.</p>
+        <p>I design it, build it, host it, and support it myself. If something breaks at 7 PM on a Friday, you're not sitting in a ticket queue. You're texting me.</p>
+        <p>Outside of Servd, I also take on web and app projects for other independent businesses in Metro Vancouver that need something built specifically around how they actually operate, not a template with their logo pasted on. If that sounds like your business, the same booking link on this page works for that conversation too.</p>
+      </div>
+
+      <div class="trust-grid" style="margin-top: 2.75rem;">
+        <div class="trust-card">
+          <span class="num">DESIGN</span>
+          <h3>Built to be used on a busy Friday night</h3>
+          <p>Every screen is designed for a server holding a tray, not a product demo. If a flow needs a manual to explain it, it gets redesigned, not documented.</p>
+        </div>
+        <div class="trust-card">
+          <span class="num">ENGINEERING</span>
+          <h3>Full-stack, end to end</h3>
+          <p>One person designs, builds, hosts, and supports the whole system, so there's no gap between how it was designed and how it actually behaves in your restaurant.</p>
+        </div>
+        <div class="trust-card">
+          <span class="num">CONSULTING</span>
+          <h3>Advice included, not upsold</h3>
+          <p>Menu structure, table layout, spice-level pricing, split-billing policy. Happy to think through the operational side with you, not just hand over software.</p>
+        </div>
+      </div>
+
+      <a href="https://calendly.com/pankaj_singh-servd/30min" class="btn btn-ghost" style="margin-top: 1.75rem;" target="_blank" rel="noopener">Book 30 Minutes to Talk It Through</a>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════ SERVICES ═══════════════════════════ -->
+  <section id="services" class="reveal" aria-labelledby="services-heading">
+    <div class="wrap">
+      <div class="diff-head" style="margin-bottom: 0;">
+        <p class="eyebrow">Beyond Servd</p>
+        <h2 id="services-heading">Need something built outside of restaurant ordering? That's on the table too.</h2>
+        <p>Servd is the flagship project, but the same hands-on approach applies to any small business that needs real software built around how it actually works, not a template.</p>
+      </div>
+
+      <div class="trust-grid" style="margin-top: 2.75rem;">
+        <div class="trust-card">
+          <span class="num">WEBSITES</span>
+          <h3>Custom web design and development</h3>
+          <p>A site built around your actual business, not a drag-and-drop template with your logo swapped in. Fast, clean, and easy for you to update yourself afterward.</p>
+        </div>
+        <div class="trust-card">
+          <span class="num">APPS</span>
+          <h3>Web and mobile app development</h3>
+          <p>From a simple internal tool to a full customer-facing app, designed and built end to end by one person, not handed off between five different specialists.</p>
+        </div>
+        <div class="trust-card">
+          <span class="num">CONSULTING</span>
+          <h3>Technical consulting and support</h3>
+          <p>Stuck on a tech decision, a broken integration, or a vendor that overpromised? Get a straight, practical answer from someone who actually builds this stuff.</p>
+        </div>
+      </div>
+
+      <a href="https://calendly.com/pankaj_singh-servd/30min" class="btn btn-ghost" style="margin-top: 1.75rem;" target="_blank" rel="noopener">Let's Talk About Your Project</a>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════ TRUST / SKEPTICISM ═══════════════════════════ -->
+  <section class="reveal" aria-labelledby="trust-heading">
+    <div class="wrap">
+      <div class="diff-head" style="margin-bottom: 0;">
+        <p class="eyebrow">We Know You've Been Burned Before</p>
+        <h2 id="trust-heading">Most restaurant owners have a tech-vendor horror story. Here's how Servd is different, plainly.</h2>
+      </div>
+      <div class="trust-grid">
+        <div class="trust-card">
+          <span class="num">ON COST</span>
+          <h3>No commissions, no surprise fees</h3>
+          <p>One flat setup cost, one small flat monthly fee. Nothing scales against your sales. A busy Friday night doesn't cost you more.</p>
+        </div>
+        <div class="trust-card">
+          <span class="num">ON SETUP</span>
+          <h3>Live in days, not months</h3>
+          <p>Your menu, tables, and QR codes get set up directly with you, no drawn-out onboarding process or endless back-and-forth tickets.</p>
+        </div>
+        <div class="trust-card">
+          <span class="num">ON LOCK-IN</span>
+          <h3>Your menu data, not mine to hold hostage</h3>
+          <p>No multiyear contract games. If Servd isn't working for you, you're not stuck. I'd rather earn the renewal every year than lock you into one.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════ EARLY ACCESS ═══════════════════════════
+       IMPORTANT: no restaurant has signed on as a client yet. This section
+       must never claim or imply an existing customer, live deployment, or
+       case study until there's an actual signed restaurant to name. Keep
+       the framing to "built and tested" (true) rather than "in use by a
+       restaurant" (not true yet). -->
+  <section id="early-access" class="reveal" aria-labelledby="early-access-heading">
+    <div class="wrap">
+      <div class="diff-head" style="margin-bottom: 0;">
+        <p class="eyebrow">Early Access</p>
+        <h2 id="early-access-heading">Built and tested. Now taking on the first few restaurants.</h2>
+        <p>Servd is a fully working system, not a slide deck. The ordering flow, the confirmation step, per-guest tracking, and split billing are all built and running today. What's next isn't more building, it's the first restaurant putting it to work on a real Friday night.</p>
+      </div>
+
+      <div class="trust-grid" style="margin-top: 2.75rem;">
+        <div class="trust-card">
+          <span class="num">STEP 1</span>
+          <h3>See it on a real call</h3>
+          <p>No sales deck. A live walkthrough of the actual system, using your menu if you'd like.</p>
+        </div>
+        <div class="trust-card">
+          <span class="num">STEP 2</span>
+          <h3>Set up together</h3>
+          <p>Your menu, tables, and QR codes get set up directly with you, usually within a few days.</p>
+        </div>
+        <div class="trust-card">
+          <span class="num">STEP 3</span>
+          <h3>You shape what's next</h3>
+          <p>As one of the first restaurants on Servd, your feedback directly decides what gets built next.</p>
+        </div>
+      </div>
+
+      <div class="overview-footer">
+        <a href="https://calendly.com/pankaj_singh-servd/30min" class="btn btn-primary" target="_blank" rel="noopener">Book a Live Walkthrough</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════ PRICING ═══════════════════════════ -->
+  <section id="pricing" class="reveal" aria-labelledby="pricing-heading">
+    <div class="wrap">
+      <div class="diff-head" style="margin-bottom: 0;">
+        <p class="eyebrow">Pricing</p>
+        <h2 id="pricing-heading">Priced like a local tool, not a national platform.</h2>
+      </div>
+
+      <div class="pricing-grid">
+        <div class="price-card">
+          <h3 class="price-name">Starter</h3>
+          <p class="price-amount">$150 <span>one-time</span></p>
+          <p class="price-note">Get fully set up, no monthly commitment to start.</p>
+          <ul>
+            <li>Full menu &amp; spice-level setup</li>
+            <li>QR codes generated for every table</li>
+            <li>Owner dashboard, fully branded to you</li>
+            <li>One round of setup support</li>
+          </ul>
+          <a href="#demo" class="btn btn-ghost">Talk About Your Restaurant</a>
+        </div>
+
+        <div class="price-card featured">
+          <h3 class="price-name">Growth</h3>
+          <p class="price-amount">$35 <span>/ month</span></p>
+          <p class="price-note">Everything in Starter, kept running and improving.</p>
+          <ul>
+            <li>Hosting, uptime &amp; ongoing updates</li>
+            <li>Direct email/phone support from me</li>
+            <li>New features as they ship, included</li>
+            <li>No per-order commission, ever</li>
+          </ul>
+          <a href="#demo" class="btn btn-primary">Talk About Your Restaurant</a>
+        </div>
+
+        <div class="price-card">
+          <h3 class="price-name">Custom</h3>
+          <p class="price-amount">Let's talk</p>
+          <p class="price-note">For multi-location groups or specific needs.</p>
+          <ul>
+            <li>Multiple locations under one account</li>
+            <li>Custom feature requests considered</li>
+            <li>Volume-based pricing</li>
+          </ul>
+          <a href="#demo" class="btn btn-ghost">Talk About Your Restaurant</a>
+        </div>
+      </div>
+
+      <div class="pricing-note-box">
+        <p>Don't let the numbers above worry you. These are starting points, not fixed prices. Every restaurant runs differently: different table counts, different order volume, different needs. Tell me what your restaurant actually needs, and I'll put together something that fits your budget without cutting corners on what makes this work well for you.</p>
+        <p class="pricing-note-small">That's usually still <strong>less than the tab on one lost table</strong> a month, and unlike a percentage-based platform, it never grows with your sales.</p>
+        <div class="pricing-note-actions">
+          <a href="https://calendly.com/pankaj_singh-servd/30min" class="btn btn-primary" target="_blank" rel="noopener">Let's Talk It Through</a>
+          <a href="#demo" class="btn btn-ghost">Or fill out the quick form ↓</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════ FAQ ═══════════════════════════ -->
+  <section id="faq" class="reveal" aria-labelledby="faq-heading">
+    <div class="wrap-narrow">
+      <div class="diff-head" style="margin-bottom: 0;">
+        <p class="eyebrow">Questions</p>
+        <h2 id="faq-heading">Answered plainly.</h2>
+      </div>
+
+      <div class="faq-list" id="faqList">
+        <div class="faq-item" data-open="false">
+          <button type="button" class="faq-q" aria-expanded="false">Do my customers need to download an app? <span class="plus" aria-hidden="true">+</span></button>
+          <div class="faq-a"><div class="faq-a-inner">No. They scan the table's QR code and it opens straight in their phone's browser. No app store, no account, no download.</div></div>
+        </div>
+        <div class="faq-item" data-open="false">
+          <button type="button" class="faq-q" aria-expanded="false">Do I need a POS system already? <span class="plus" aria-hidden="true">+</span></button>
+          <div class="faq-a"><div class="faq-a-inner">No. Servd runs independently. Orders show up on your owner dashboard on any phone, tablet, or laptop, and it can sit alongside whatever POS you already use.</div></div>
+        </div>
+        <div class="faq-item" data-open="false">
+          <button type="button" class="faq-q" aria-expanded="false">What if my website URL or hosting ever changes? <span class="plus" aria-hidden="true">+</span></button>
+          <div class="faq-a"><div class="faq-a-inner">Your QR codes are generated inside your own dashboard. If your URL changes, regenerate every table's code in one click. No reprinting confusion, no third-party QR tool needed.</div></div>
+        </div>
+        <div class="faq-item" data-open="false">
+          <button type="button" class="faq-q" aria-expanded="false">Can I run more than one location? <span class="plus" aria-hidden="true">+</span></button>
+          <div class="faq-a"><div class="faq-a-inner">Yes, that's the Custom tier. Each location gets its own branded setup, managed under one account.</div></div>
+        </div>
+        <div class="faq-item" data-open="false">
+          <button type="button" class="faq-q" aria-expanded="false">Where does my menu and order data actually live? <span class="plus" aria-hidden="true">+</span></button>
+          <div class="faq-a"><div class="faq-a-inner">In a secure, industry-standard cloud database (Firebase). It's yours. Nothing about your menu or order history is shared across restaurants.</div></div>
+        </div>
+        <div class="faq-item" data-open="false">
+          <button type="button" class="faq-q" aria-expanded="false">How long does setup actually take? <span class="plus" aria-hidden="true">+</span></button>
+          <div class="faq-a"><div class="faq-a-inner">Most restaurants are fully live within a few days of the demo call: menu entry, spice-level setup, branding, and QR codes for every table.</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════ FINAL CTA / DEMO FORM ═══════════════════════════ -->
+  <section id="demo" class="cta-final reveal" aria-labelledby="demo-heading">
+    <div class="wrap cta-final-inner">
+      <div>
+        <p class="eyebrow">Book A Free Demo</p>
+        <h2 id="demo-heading">See it running on your own menu, live.</h2>
+        <p>No sales deck, no pressure. A real 20-minute walkthrough on a call or in person, using your actual menu if you'd like.</p>
+        <ul class="cta-final-list">
+          <li>You'll be talking to me directly, not a call center or a sales rep</li>
+          <li>See the confirmation step and split billing in action</li>
+          <li>Get a straight answer on setup time and cost for your restaurant</li>
+        </ul>
+        <a href="https://calendly.com/pankaj_singh-servd/30min" class="btn btn-primary" style="margin-top: 1.5rem;" target="_blank" rel="noopener">Skip the form. Pick a time on Calendly.</a>
+        <p style="margin-top: 0.85rem; font-size: 0.875rem; color: var(--ink-muted);">Prefer to send details first? Fill out the form instead →</p>
+      </div>
+
+      <!--
+        ══════════════════════════════════════════════════════════════
+        FORMSPREE DEMO FORM
+        ══════════════════════════════════════════════════════════════
+        Submits silently in the background (no email app popup) via
+        Formspree. Submissions are delivered to whatever email address
+        is registered on the Formspree form https://formspree.io/f/mgogdjrb
+        (set to pankaj_singh@servd.tech). To change the destination email,
+        log into formspree.io and update it there. Nothing here needs
+        to change.
+        ══════════════════════════════════════════════════════════════
+      -->
+      <form class="demo-form" id="demoForm" action="https://formspree.io/f/mgogdjrb" method="POST">
+        <div class="form-row two-col">
+          <div class="form-field">
+            <label for="fName">Your name</label>
+            <input type="text" id="fName" name="name" required autocomplete="name">
+          </div>
+          <div class="form-field">
+            <label for="fRestaurant">Restaurant name</label>
+            <input type="text" id="fRestaurant" name="restaurant" required autocomplete="organization">
+          </div>
+        </div>
+        <div class="form-row two-col">
+          <div class="form-field">
+            <label for="fEmail">Email</label>
+            <input type="email" id="fEmail" name="email" required autocomplete="email">
+          </div>
+          <div class="form-field">
+            <label for="fPhone">Phone (optional)</label>
+            <input type="tel" id="fPhone" name="phone" autocomplete="tel">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-field">
+            <label for="fMessage">Anything you want us to know?</label>
+            <textarea id="fMessage" name="message" rows="3" placeholder="Number of tables, current POS, best time to call…"></textarea>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary btn-lg">Request My Free Demo</button>
+        <div class="form-success" id="formSuccess" role="status">Thanks. I'll be in touch within a day to set up your demo.</div>
+        <div class="form-error" id="formError" role="alert">Something went wrong sending that. Please try again, or email pankaj_singh@servd.tech directly.</div>
+      </form>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════ CONTACT ═══════════════════════════ -->
+  <section id="contact" class="reveal" aria-labelledby="contact-heading">
+    <div class="wrap-narrow" style="text-align: center;">
+      <p class="eyebrow">Contact</p>
+      <h2 id="contact-heading">Have a project in mind? Let's talk.</h2>
+      <a href="mailto:pankaj_singh@servd.tech" class="contact-email">pankaj_singh@servd.tech</a>
+      <p style="margin-top: 1.1rem; color: var(--ink-muted); font-size: 0.9375rem;">Or <a href="https://calendly.com/pankaj_singh-servd/30min" target="_blank" rel="noopener" style="color: var(--terracotta-deep); font-weight: 600; text-decoration: underline;">book a 30-minute call</a> instead.</p>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap footer-inner">
+    <div class="footer-brand">
+      <a href="#top" class="wordmark" aria-label="Servd home">
+        <span class="wordmark-mark" aria-hidden="true"></span>
+        <span class="wordmark-text">Servd</span>
+      </a>
+      <p class="footer-tagline">Scan. Confirm. Served right.</p>
+      <p>QR ordering built for independent restaurants. Confirmation first, per-guest tracking, flexible billing. Based in Burnaby, BC.</p>
+    </div>
+    <nav class="footer-links" aria-label="Footer">
+      <a href="#how-it-works">Product</a>
+      <a href="#why-local">Why Local</a>
+      <a href="#about">About</a>
+      <a href="#services">Services</a>
+      <a href="#early-access">Early Access</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#faq">FAQ</a>
+      <a href="#demo">Book a Demo</a>
+      <a href="#contact">Contact</a>
+    </nav>
+  </div>
+  <div class="wrap footer-bottom">
+    © <span id="year"></span> Servd · Burnaby, BC · Metro Vancouver &amp; BC restaurants
+    <p style="margin-top: 0.75rem; font-size: 0.75rem; line-height: 1.5;">Toast and Square are trademarks of their respective owners. Feature comparisons reflect our own research and are provided for informational purposes.</p>
+  </div>
+</footer>
+
+<script>
+  // ══════════════════════════════════════════════════════════════
+  // Vanilla JS only. No framework, no external libraries.
+  // ══════════════════════════════════════════════════════════════
+  (function () {
+    "use strict";
+
+    document.getElementById("year").textContent = new Date().getFullYear();
+
+    var reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    // Mobile nav toggle
+    var navToggle = document.getElementById("navToggle");
+    var mobileMenu = document.getElementById("mobileMenu");
+    navToggle.addEventListener("click", function () {
+      var open = mobileMenu.classList.toggle("open");
+      navToggle.setAttribute("aria-expanded", open ? "true" : "false");
+    });
+    Array.prototype.forEach.call(mobileMenu.querySelectorAll("a"), function (a) {
+      a.addEventListener("click", function () {
+        mobileMenu.classList.remove("open");
+        navToggle.setAttribute("aria-expanded", "false");
+      });
+    });
+
+    // Scroll reveal
+    if ("IntersectionObserver" in window && !reducedMotion) {
+      var revealObserver = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("in-view");
+            revealObserver.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.12 });
+      document.querySelectorAll(".reveal").forEach(function (el) { revealObserver.observe(el); });
+    } else {
+      document.querySelectorAll(".reveal").forEach(function (el) { el.classList.add("in-view"); });
+    }
+
+    // FAQ accordion
+    document.querySelectorAll(".faq-item").forEach(function (item) {
+      var btn = item.querySelector(".faq-q");
+      var panel = item.querySelector(".faq-a");
+      var inner = item.querySelector(".faq-a-inner");
+      btn.addEventListener("click", function () {
+        var isOpen = item.getAttribute("data-open") === "true";
+        item.setAttribute("data-open", isOpen ? "false" : "true");
+        btn.setAttribute("aria-expanded", isOpen ? "false" : "true");
+        panel.style.maxHeight = isOpen ? "0px" : inner.scrollHeight + "px";
+      });
+    });
+
+    // Demo form submission (Formspree via fetch, no page reload)
+    var demoForm = document.getElementById("demoForm");
+    var formSuccess = document.getElementById("formSuccess");
+    var formError = document.getElementById("formError");
+    demoForm.addEventListener("submit", function (e) {
+      e.preventDefault();
+      formSuccess.classList.remove("show");
+      formError.classList.remove("show");
+      var submitBtn = demoForm.querySelector("button[type=submit]");
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Sending…";
+
+      fetch(demoForm.action, {
+        method: "POST",
+        body: new FormData(demoForm),
+        headers: { Accept: "application/json" },
+      }).then(function (response) {
+        if (response.ok) {
+          formSuccess.classList.add("show");
+          demoForm.reset();
+        } else {
+          formError.classList.add("show");
+        }
+      }).catch(function () {
+        formError.classList.add("show");
+      }).finally(function () {
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Request My Free Demo";
+      });
+    });
+
+    // Animated order-ticket hero (loops: items appear, then confirmed)
+    var ticketLines = document.querySelectorAll("#ticketLines li");
+    var ticketStatus = document.getElementById("ticketStatus");
+    var ticketStatusText = document.getElementById("ticketStatusText");
+    var ticketTime = document.getElementById("ticketTime");
+
+    function setTicketTime() {
+      var now = new Date();
+      ticketTime.textContent = now.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+    }
+    setTicketTime();
+
+    function runTicketLoop() {
+      // Reset
+      ticketLines.forEach(function (li) { li.classList.remove("show"); });
+      ticketStatus.className = "ticket-status pending";
+      ticketStatusText.textContent = "Needs Confirmation";
+
+      if (reducedMotion) {
+        ticketLines.forEach(function (li) { li.classList.add("show"); });
+        ticketStatus.className = "ticket-status confirmed";
+        ticketStatusText.textContent = "Confirmed: Sent to Kitchen";
+        return; // no looping animation for reduced-motion users
+      }
+
+      ticketLines.forEach(function (li, i) {
+        setTimeout(function () { li.classList.add("show"); }, 300 + i * 450);
+      });
+
+      var confirmDelay = 300 + ticketLines.length * 450 + 1400;
+      setTimeout(function () {
+        ticketStatus.className = "ticket-status confirmed";
+        ticketStatusText.textContent = "Confirmed: Sent to Kitchen";
+      }, confirmDelay);
+
+      setTimeout(runTicketLoop, confirmDelay + 3200);
+    }
+    runTicketLoop();
+  })();
+</script>
+</body>
+</html>

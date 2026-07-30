@@ -1,0 +1,20 @@
+# Netlify config for the servd.tech marketing site.
+# Point a Netlify site at this repo and it builds/deploys with zero
+# manual UI configuration beyond adding the custom domain (servd.tech)
+# in Site settings → Domain management.
+#
+# index_v3.html / owner_v3.html are NOT deployed here on purpose — those
+# are published separately via GitHub Pages (see
+# .github/workflows/deploy-pages.yml). This site only serves
+# marketing.html (redirected to "/" below) plus the printable feature
+# sheet at /feature-sheet.html.
+
+[build]
+  base = "servd-v3"
+  command = "npm run build"
+  publish = "servd-v3/dist"
+
+[[redirects]]
+  from = "/"
+  to = "/marketing.html"
+  status = 200

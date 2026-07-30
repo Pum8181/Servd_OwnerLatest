@@ -1,0 +1,744 @@
+import { useEffect, useRef, useState } from "react";
+import { motion, AnimatePresence, MotionConfig, useScroll, useTransform } from "motion/react";
+
+const CALENDLY_LINK = "https://calendly.com/pankaj_singh-servd/30min";
+const FORMSPREE_ENDPOINT = "https://formspree.io/f/mgogdjrb";
+const DEMO_MENU_URL = "https://servd.tech/index_v3.html?table=5";
+const REDUCED_MOTION_KEY = "servd_marketing_reduced_motion";
+
+function qrImageUrl(url, size = 220) {
+  const params = new URLSearchParams({
+    size: `${size}x${size}`, data: url, color: "1A3626", bgcolor: "F3F1E8", qzone: "1", margin: "0",
+  });
+  return `https://api.qrserver.com/v1/create-qr-code/?${params.toString()}`;
+}
+
+// Shared scroll-reveal wrapper — every section on this page uses this
+// same in/out pattern so the motion feels like one coherent language
+// rather than a different animation per section. MotionConfig upstream
+// already collapses this to a simple opacity fade when reduced motion
+// is active (OS setting or the in-page toggle), so nothing extra is
+// needed here for that.
+function Reveal({ children, delay = 0, y = 28, className = "", as = "div", ...rest }) {
+  const Comp = motion[as] || motion.div;
+  return (
+    <Comp
+      className={className}
+      initial={{ opacity: 0, y }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-80px" }}
+      transition={{ duration: 0.65, ease: [0.16, 1, 0.3, 1], delay }}
+      {...rest}
+    >
+      {children}
+    </Comp>
+  );
+}
+
+function Nav({ onOpenDemo, reducedMotion, onToggleReducedMotion }) {
+  const { scrollY } = useScroll();
+  const bgOpacity = useTransform(scrollY, [0, 80], [0, 1]);
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  const links = [
+    { href: "#how-it-works", label: "How It Works" },
+    { href: "#features", label: "Features" },
+    { href: "#qr-flow", label: "QR Ordering" },
+    { href: "#owner", label: "Owner Dashboard" },
+    { href: "#pricing", label: "Pricing" },
+    { href: "#faq", label: "FAQ" },
+  ];
+
+  return (
+    <header className="m-nav">
+      <motion.div className="m-nav-bg" style={{ opacity: bgOpacity }} />
+      <div className="m-nav-inner">
+        <a href="#top" className="m-wordmark">
+          <span className="m-wordmark-mark" aria-hidden="true" />
+          <span className="m-wordmark-text">Servd</span>
+        </a>
+        <nav className="m-nav-links" aria-label="Primary">
+          {links.map((l) => (
+            <a key={l.href} href={l.href}>{l.label}</a>
+          ))}
+        </nav>
+        <div className="m-nav-actions">
+          <button
+            type="button"
+            className="m-motion-toggle"
+            aria-pressed={reducedMotion}
+            aria-label={reducedMotion ? "Reduced motion is on — click to re-enable animations" : "Animations are on — click to reduce motion"}
+            title={reducedMotion ? "Reduced motion: on" : "Reduced motion: off"}
+            onClick={onToggleReducedMotion}
+          >
+            {reducedMotion ? "⏸" : "▶"}
+          </button>
+          <button type="button" onClick={onOpenDemo} className="m-btn m-btn-primary m-nav-cta">
+            Book a Live Demo
+          </button>
+          <button
+            type="button"
+            className="m-nav-toggle"
+            aria-label="Toggle menu"
+            aria-expanded={menuOpen}
+            onClick={() => setMenuOpen((v) => !v)}
+          >
+            <span className={menuOpen ? "is-open" : ""} />
+          </button>
+        </div>
+      </div>
+      <AnimatePresence>
+        {menuOpen && (
+          <motion.div
+            className="m-nav-mobile"
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.25, ease: "easeOut" }}
+          >
+            {links.map((l) => (
+              <a key={l.href} href={l.href} onClick={() => setMenuOpen(false)}>{l.label}</a>
+            ))}
+            <button type="button" className="m-btn m-btn-primary" onClick={() => { setMenuOpen(false); onOpenDemo(); }}>
+              Book a Live Demo
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </header>
+  );
+}
+
+function PhoneTicket() {
+  const lines = [
+    { name: "Hyderabadi Chicken Biryani", spice: "Hot", price: "$21.95" },
+    { name: "Butter Chicken", spice: "Mild", price: "$19.95" },
+    { name: "Garlic Naan × 2", spice: null, price: "$9.90" },
+  ];
+  const [confirmed, setConfirmed] = useState(false);
+
+  useEffect(() => {
+    const t = setInterval(() => setConfirmed((v) => !v), 3200);
+    return () => clearInterval(t);
+  }, []);
+
+  return (
+    <>
+      <div className="m-phone-mock-head">
+        <span className="m-phone-mock-table">TABLE 5</span>
+        <span className="m-phone-mock-guests">Alex &amp; Sam</span>
+      </div>
+      <ul className="m-phone-mock-lines">
+        {lines.map((l) => (
+          <li key={l.name}>
+            <span>{l.name}{l.spice && <em>{l.spice}</em>}</span>
+            <span className="m-phone-mock-price">{l.price}</span>
+          </li>
+        ))}
+      </ul>
+      <motion.div layout className={`m-phone-mock-status${confirmed ? " is-confirmed" : ""}`} transition={{ duration: 0.4, ease: "easeOut" }}>
+        <motion.span
+          className="m-phone-mock-dot"
+          animate={confirmed ? { scale: 1 } : { scale: [1, 0.4, 1] }}
+          transition={confirmed ? { duration: 0.3 } : { duration: 1.1, repeat: Infinity, ease: "easeInOut" }}
+        />
+        <AnimatePresence mode="wait">
+          <motion.span
+            key={confirmed ? "confirmed" : "pending"}
+            initial={{ opacity: 0, y: 4 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -4 }}
+            transition={{ duration: 0.2 }}
+          >
+            {confirmed ? "Confirmed — sent to kitchen" : "Needs confirmation"}
+          </motion.span>
+        </AnimatePresence>
+      </motion.div>
+    </>
+  );
+}
+
+// The "high-fidelity hero artwork" deliverable: a layered tablet
+// (owner dashboard) + phone (customer ticket) composition, built as
+// CSS/SVG rather than photography or a produced video — those need
+// either real product photography or a video editing pass I can't
+// author or verify from here. Scroll-linked parallax (tablet moves
+// slower than the phone) is real motion, not decorative-only.
+function DeviceMockup() {
+  const stageRef = useRef(null);
+  const { scrollYProgress } = useScroll({ target: stageRef, offset: ["start start", "end start"] });
+  const tabletY = useTransform(scrollYProgress, [0, 1], [0, -26]);
+  const phoneY = useTransform(scrollYProgress, [0, 1], [0, -64]);
+
+  return (
+    <div className="m-device-stack" ref={stageRef}>
+      <motion.div className="m-tablet-mock" style={{ y: tabletY }} aria-hidden="true">
+        <div className="m-tablet-mock-screen">
+          <div className="m-tablet-mock-header"><span>Needs Review</span><span className="m-tablet-mock-count">2</span></div>
+          <div className="m-tablet-mock-row"><span>Table 5</span><span className="m-tablet-mock-badge">Split by item</span></div>
+          <div className="m-tablet-mock-row"><span>Table 9</span><span className="m-tablet-mock-badge">One bill</span></div>
+          <div className="m-tablet-mock-header"><span>In Kitchen</span><span className="m-tablet-mock-count">1</span></div>
+          <div className="m-tablet-mock-row"><span>Table 3</span><span className="m-tablet-mock-badge">Split equally</span></div>
+        </div>
+      </motion.div>
+      <motion.div className="m-phone-mock" style={{ y: phoneY }}>
+        <PhoneTicket />
+      </motion.div>
+    </div>
+  );
+}
+
+function Hero({ onOpenDemo }) {
+  const words = ["No order reaches your kitchen", "until a person checks it first."];
+  return (
+    <header className="m-hero" id="top">
+      <div className="m-wrap m-hero-grid">
+        <div>
+          <Reveal className="m-eyebrow" y={12}>QR Ordering, Rebuilt Around One Missing Step</Reveal>
+          <h1 className="m-hero-h1">
+            {words.map((line, i) => (
+              <motion.span
+                key={line}
+                className={`m-hero-word${i === 1 ? " is-accent" : ""}`}
+                style={{ display: "block" }}
+                initial={{ opacity: 0, y: 26 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: 0.15 * i }}
+              >
+                {line}
+              </motion.span>
+            ))}
+          </h1>
+          <Reveal as="p" delay={0.3} className="m-hero-sub">
+            Guests scan a table's QR, order from their own phone, and split the bill however they
+            want, in one tap. Every order still pauses for a quick human confirmation first, so the
+            wrong spice level or a mis-tapped table never becomes wasted food.
+          </Reveal>
+          <Reveal delay={0.4} className="m-hero-ctas">
+            <button type="button" onClick={onOpenDemo} className="m-btn m-btn-primary m-btn-lg">
+              Book a Live Demo
+            </button>
+            <a href="#how-it-works" className="m-btn m-btn-ghost m-btn-lg">See how it works ↓</a>
+          </Reveal>
+          <Reveal delay={0.48} as="p" className="m-hero-trust">
+            Built for independent restaurants in <strong>Metro Vancouver, BC</strong> · No commissions, ever.
+          </Reveal>
+        </div>
+
+        <Reveal delay={0.2} y={40} className="m-hero-visual">
+          <DeviceMockup />
+          <p className="m-hero-caption">A live-feeling mock of the real Servd product, not a screenshot.</p>
+        </Reveal>
+      </div>
+    </header>
+  );
+}
+
+function HowItWorks() {
+  const steps = [
+    { n: "01", title: "Guest scans and orders", body: "They scan the table's QR, browse the live menu, pick spice levels, and tag their name — no app to install." },
+    { n: "02", title: "It pauses for a human check", body: "The order lands in a Needs Confirmation queue, kept clearly separate from anything already in the kitchen." },
+    { n: "03", title: "One tap, it's confirmed", body: "Staff catch anything wrong, fix it if needed, and confirm — now it's genuinely in the kitchen's queue." },
+    { n: "04", title: "Bill however they want", body: "One bill, split evenly, or split per person — chosen in one tap, clear enough to read aloud at the table." },
+  ];
+  return (
+    <section id="how-it-works" className="m-section">
+      <div className="m-wrap">
+        <Reveal className="m-section-head">
+          <p className="m-eyebrow">How A Table Becomes A Paid Check</p>
+          <h2>Four steps. No app. No POS overhaul.</h2>
+        </Reveal>
+        <div className="m-steps">
+          {steps.map((s, i) => (
+            <Reveal key={s.n} delay={i * 0.08} className="m-step">
+              <span className="m-step-num">{s.n}</span>
+              <h3>{s.title}</h3>
+              <p>{s.body}</p>
+            </Reveal>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function Features() {
+  const items = [
+    { icon: "🌶", title: "Spice & Variant Selector", body: "Mild, Medium, Hot, Extra Hot per dish, with optional price bumps — upsells happen automatically." },
+    { icon: "✓", title: "Human Confirmation Step", body: "Nothing reaches the kitchen automatically. A person reviews and taps confirm first." },
+    { icon: "👥", title: "Per-Guest Order Tracking", body: "Know exactly who ordered what, even when the whole table scanned the same QR code." },
+    { icon: "🧾", title: "Flexible Split Billing", body: "Together, split evenly, or split per person — chosen in one tap, no table-side math." },
+    { icon: "⚡", title: "Live Sold-Out & Markdowns", body: "Flip a switch and an item vanishes from every phone at every table, instantly." },
+    { icon: "▦", title: "Branded QR Generator", body: "Generate a forest-and-cream QR for every table right from the owner dashboard." },
+  ];
+  return (
+    <section id="features" className="m-section m-section-tint">
+      <div className="m-wrap">
+        <Reveal className="m-section-head">
+          <p className="m-eyebrow">The Full Menu</p>
+          <h2>Everything on the table, plainly stated.</h2>
+        </Reveal>
+        <div className="m-feature-grid">
+          {items.map((f, i) => (
+            <Reveal key={f.title} delay={i * 0.05} y={20}>
+              <motion.div className="m-feature-card" whileHover={{ y: -6 }} transition={{ duration: 0.25 }}>
+                <span className="m-feature-icon" aria-hidden="true">{f.icon}</span>
+                <h3>{f.title}</h3>
+                <p>{f.body}</p>
+              </motion.div>
+            </Reveal>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function QrFlow() {
+  return (
+    <section id="qr-flow" className="m-section">
+      <div className="m-wrap">
+        <Reveal className="m-section-head">
+          <p className="m-eyebrow">QR Ordering, Table-Aware From The First Scan</p>
+          <h2>One QR per table. The menu already knows where you're sitting.</h2>
+          <p className="m-section-sub">
+            Generate a code for Table 5 in the owner dashboard, and every scan of that code opens
+            the menu with the table already attached — no typing a table number, no mixing up orders.
+          </p>
+        </Reveal>
+
+        <div className="m-qr-flow">
+          <Reveal delay={0.05} className="m-qr-flow-card">
+            <div className="m-qr-flow-frame">
+              <img src={qrImageUrl(DEMO_MENU_URL)} alt="Example branded QR code for Table 5" width={160} height={160} loading="lazy" />
+            </div>
+            <strong>Table 5's QR</strong>
+            <span>Generated in the owner dashboard</span>
+          </Reveal>
+
+          <FlowArrow delay={0.15} />
+
+          <Reveal delay={0.25} className="m-qr-flow-card">
+            <div className="m-qr-flow-icon">📱</div>
+            <strong>Guest scans it</strong>
+            <span>Opens straight in their phone's browser</span>
+          </Reveal>
+
+          <FlowArrow delay={0.35} />
+
+          <Reveal delay={0.45} className="m-qr-flow-card">
+            <div className="m-qr-flow-icon">🍽️</div>
+            <strong>Table 5, pre-selected</strong>
+            <span className="m-qr-flow-url">?table=5</span>
+          </Reveal>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function FlowArrow({ delay = 0 }) {
+  return (
+    <svg className="m-flow-arrow" viewBox="0 0 60 24" fill="none" aria-hidden="true">
+      <motion.path
+        d="M2 12h50M42 4l10 8-10 8"
+        stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+        initial={{ pathLength: 0, opacity: 0 }}
+        whileInView={{ pathLength: 1, opacity: 1 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.6, delay, ease: "easeInOut" }}
+      />
+    </svg>
+  );
+}
+
+function OwnerOverview() {
+  const pending = ["Table 5 — Split by item", "Table 9 — One bill"];
+  const inKitchen = ["Table 3 — Split equally"];
+  return (
+    <section id="owner" className="m-section m-section-tint">
+      <div className="m-wrap m-owner-grid">
+        <Reveal>
+          <p className="m-eyebrow">Your Whole Floor, At A Glance</p>
+          <h2>The owner dashboard runs the shift, not just the menu.</h2>
+          <p className="m-section-sub">
+            Every order pauses in Needs Review before your kitchen ever sees it. Approve, edit,
+            or reject in a tap, and watch it move into In Kitchen live.
+          </p>
+          <ul className="m-checklist">
+            <li>Two-column live queue: Needs Review and In Kitchen</li>
+            <li>Staff PINs with instant, real-time revocation on removal</li>
+            <li>Menu management with owner-assignable Trending / Chef's Specials / Discount tags</li>
+            <li>Branded QR generator, built in — no third-party tool required</li>
+          </ul>
+        </Reveal>
+
+        <Reveal delay={0.15} className="m-dash-mock">
+          <div className="m-dash-mock-col">
+            <div className="m-dash-mock-header"><span>Needs Review</span><span className="m-dash-mock-count">{pending.length}</span></div>
+            {pending.map((p, i) => (
+              <motion.div key={p} className="m-dash-mock-card" initial={{ opacity: 0, x: -10 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ delay: 0.2 + i * 0.1 }}>
+                {p}
+              </motion.div>
+            ))}
+          </div>
+          <div className="m-dash-mock-col">
+            <div className="m-dash-mock-header"><span>In Kitchen</span><span className="m-dash-mock-count">{inKitchen.length}</span></div>
+            {inKitchen.map((p, i) => (
+              <motion.div key={p} className="m-dash-mock-card is-active" initial={{ opacity: 0, x: -10 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ delay: 0.4 + i * 0.1 }}>
+                {p}
+              </motion.div>
+            ))}
+          </div>
+        </Reveal>
+      </div>
+    </section>
+  );
+}
+
+function StaffWorkflow() {
+  const [step, setStep] = useState(0);
+  const stages = ["Order placed", "Needs staff review", "Approved by staff", "In kitchen"];
+
+  useEffect(() => {
+    const t = setInterval(() => setStep((s) => (s + 1) % stages.length), 1600);
+    return () => clearInterval(t);
+  }, [stages.length]);
+
+  return (
+    <section className="m-section">
+      <div className="m-wrap">
+        <Reveal className="m-section-head">
+          <p className="m-eyebrow">The Human Check, Made Visible</p>
+          <h2>A real staff member confirms every order before the kitchen does.</h2>
+          <p className="m-section-sub">
+            This is the step every other QR tool skips. Watch an order move through it below.
+          </p>
+        </Reveal>
+
+        <Reveal delay={0.1} className="m-workflow">
+          {stages.map((label, i) => (
+            <div className="m-workflow-stage" key={label}>
+              <motion.div
+                className="m-workflow-dot"
+                animate={{
+                  backgroundColor: i <= step ? "var(--m-primary)" : "var(--m-surface-alt)",
+                  color: i <= step ? "var(--m-surface)" : "var(--m-muted)",
+                  scale: i === step ? 1.15 : 1,
+                }}
+                transition={{ duration: 0.35 }}
+              >
+                {i < step ? "✓" : i + 1}
+              </motion.div>
+              <span className={i <= step ? "is-active" : ""}>{label}</span>
+              {i < stages.length - 1 && <div className={`m-workflow-line${i < step ? " is-active" : ""}`} />}
+            </div>
+          ))}
+        </Reveal>
+      </div>
+    </section>
+  );
+}
+
+function Pricing() {
+  const tiers = [
+    {
+      name: "Starter", price: "$149", period: "/mo", note: "One location, everything you need to launch.",
+      features: ["Unlimited tables & QR codes", "Live menu with sold-out & markdowns", "Human confirmation step", "Split billing"],
+    },
+    {
+      name: "Growth", price: "$249", period: "/mo", note: "For a busier floor with more staff.", featured: true,
+      features: ["Everything in Starter", "Unlimited staff PINs", "Owner-assignable tags & carousels", "Priority support from the person who built it"],
+    },
+    {
+      name: "Full Service", price: "Let's talk", period: "", note: "Multiple locations or a custom rollout.",
+      features: ["Everything in Growth", "Multi-location dashboard", "White-label branding", "Onboarding & staff training included"],
+    },
+  ];
+  return (
+    <section id="pricing" className="m-section">
+      <div className="m-wrap">
+        <Reveal className="m-section-head">
+          <p className="m-eyebrow">Simple, No-Commission Pricing</p>
+          <h2>One flat monthly rate. Never a cut of your sales.</h2>
+          <p className="m-section-sub">
+            Placeholder tiers to show the shape of it — your actual rate gets confirmed together on the demo call, not guessed at here.
+          </p>
+        </Reveal>
+        <div className="m-pricing-grid">
+          {tiers.map((t, i) => (
+            <Reveal key={t.name} delay={i * 0.08}>
+              <div className={`m-price-card${t.featured ? " is-featured" : ""}`}>
+                <p className="m-price-name">{t.name}</p>
+                <p className="m-price-amount">{t.price}<span>{t.period}</span></p>
+                <p className="m-price-note">{t.note}</p>
+                <ul>
+                  {t.features.map((f) => <li key={f}>{f}</li>)}
+                </ul>
+              </div>
+            </Reveal>
+          ))}
+        </div>
+        <p className="m-pricing-footnote">Illustrative pricing shown for demo purposes — nothing here has been billed to anyone yet.</p>
+      </div>
+    </section>
+  );
+}
+
+function SocialProof() {
+  const quotes = [
+    { quote: "Placeholder quote — this space is reserved for a real restaurant owner's words after the first pilot runs.", name: "Placeholder Name", role: "Independent restaurant, Metro Vancouver" },
+    { quote: "Placeholder quote — swap this out the moment you have permission to share a real one.", name: "Placeholder Name", role: "Independent restaurant, Metro Vancouver" },
+  ];
+  const [index, setIndex] = useState(0);
+
+  useEffect(() => {
+    const t = setInterval(() => setIndex((i) => (i + 1) % quotes.length), 5200);
+    return () => clearInterval(t);
+  }, [quotes.length]);
+
+  return (
+    <section className="m-section m-section-tint">
+      <div className="m-wrap">
+        <Reveal className="m-section-head" style={{ margin: "0 auto 2.5rem", textAlign: "center" }}>
+          <p className="m-eyebrow">What Owners Will Say</p>
+          <h2>Reserved for real feedback — here's the shape it'll take.</h2>
+        </Reveal>
+        <div className="m-proof-track">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={index}
+              className="m-proof-card"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.4 }}
+            >
+              <p className="m-proof-quote">&ldquo;{quotes[index].quote}&rdquo;</p>
+              <p className="m-proof-name">{quotes[index].name}</p>
+              <p className="m-proof-role">{quotes[index].role}</p>
+            </motion.div>
+          </AnimatePresence>
+        </div>
+        <div className="m-proof-dots">
+          {quotes.map((_, i) => (
+            <button key={i} type="button" className={`m-proof-dot${i === index ? " active" : ""}`} aria-label={`Show testimonial ${i + 1}`} onClick={() => setIndex(i)} />
+          ))}
+        </div>
+        <p className="m-proof-placeholder-note">Placeholder content — no restaurant has signed on yet, so nothing above is a real quote.</p>
+      </div>
+    </section>
+  );
+}
+
+function Faq() {
+  const items = [
+    { q: "Does Servd take a cut of my sales?", a: "No. It's a flat monthly rate, never a percentage of what you ring in — see Pricing above." },
+    { q: "What happens if I don't confirm an order?", a: "It simply sits in Needs Review. Nothing reaches your kitchen until a staff member taps Approve — that pause is the whole point." },
+    { q: "Do my guests need to download an app?", a: "No. The QR opens the menu directly in their phone's browser." },
+    { q: "Can I run this on my existing tablet or do I need new hardware?", a: "Any modern tablet or laptop with a browser works for the owner dashboard — no special hardware or POS integration required." },
+    { q: "What if my internet or Wi-Fi drops mid-shift?", a: "This is an honest limitation worth knowing up front: Servd needs an internet connection to sync orders in real time. We can talk through backup plans for your specific setup on the demo call." },
+  ];
+  return (
+    <section id="faq" className="m-section">
+      <div className="m-wrap">
+        <Reveal className="m-section-head" style={{ margin: "0 auto 2.5rem", textAlign: "center" }}>
+          <p className="m-eyebrow">Questions Worth Asking</p>
+          <h2>Straight answers, before you ask.</h2>
+        </Reveal>
+        <FaqAccordion items={items} />
+      </div>
+    </section>
+  );
+}
+
+function FaqAccordion({ items }) {
+  const [openIndex, setOpenIndex] = useState(null);
+  return (
+    <div className="m-faq-list">
+      {items.map((item, i) => {
+        const isOpen = openIndex === i;
+        return (
+          <div className="m-faq-item" key={item.q} data-open={isOpen}>
+            <button
+              type="button"
+              className="m-faq-q"
+              aria-expanded={isOpen}
+              onClick={() => setOpenIndex(isOpen ? null : i)}
+            >
+              <span>{item.q}</span>
+              <span className="m-faq-plus" aria-hidden="true">+</span>
+            </button>
+            <motion.div
+              initial={false}
+              animate={{ height: isOpen ? "auto" : 0 }}
+              transition={{ duration: 0.25, ease: "easeOut" }}
+              style={{ overflow: "hidden" }}
+            >
+              <p className="m-faq-a-inner">{item.a}</p>
+            </motion.div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function ContactForm() {
+  const [status, setStatus] = useState("idle");
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+    setStatus("sending");
+    const form = e.currentTarget;
+    try {
+      const res = await fetch(FORMSPREE_ENDPOINT, {
+        method: "POST",
+        headers: { Accept: "application/json" },
+        body: new FormData(form),
+      });
+      if (res.ok) {
+        setStatus("success");
+        form.reset();
+      } else {
+        setStatus("error");
+      }
+    } catch {
+      setStatus("error");
+    }
+  }
+
+  return (
+    <form className="m-contact-form" onSubmit={handleSubmit}>
+      <h3>Prefer email? Request a demo here.</h3>
+      <label className="m-form-field">
+        Name
+        <input type="text" name="name" required autoComplete="name" />
+      </label>
+      <label className="m-form-field">
+        Restaurant
+        <input type="text" name="restaurant" autoComplete="organization" />
+      </label>
+      <label className="m-form-field">
+        Email
+        <input type="email" name="email" required autoComplete="email" />
+      </label>
+      <label className="m-form-field">
+        Anything specific you want to see on the call?
+        <textarea name="message" rows={3} />
+      </label>
+      <button type="submit" className="m-btn m-btn-primary" disabled={status === "sending"}>
+        {status === "sending" ? "Sending…" : "Send request"}
+      </button>
+      {status === "success" && <p className="m-form-note is-success">Thanks — I'll follow up by email to find a time.</p>}
+      {status === "error" && <p className="m-form-note is-error">Something went wrong sending that. Try again, or book directly above instead.</p>}
+    </form>
+  );
+}
+
+function FinalCta({ onOpenDemo }) {
+  return (
+    <section id="demo" className="m-section m-cta-final">
+      <div className="m-wrap">
+        <Reveal className="m-cta-inner">
+          <h2>See it running on a real table, live on the call.</h2>
+          <p>
+            No slide deck, no canned screenshots — I'll pull up the actual customer menu and owner
+            dashboard and walk through a full order, confirmation, and split bill with you.
+          </p>
+          <div className="m-cta-ctas">
+            <button type="button" onClick={onOpenDemo} className="m-btn m-btn-primary m-btn-lg">
+              Book a Live Demo
+            </button>
+            <a href="/feature-sheet.html" target="_blank" rel="noopener" className="m-btn m-btn-outline-light m-btn-lg">
+              Download Feature Sheet
+            </a>
+          </div>
+          <p className="m-cta-trust">Built for independent restaurants in Metro Vancouver, BC · No commissions, ever.</p>
+          <ContactForm />
+        </Reveal>
+      </div>
+    </section>
+  );
+}
+
+function DemoModal({ open, onClose }) {
+  return (
+    <AnimatePresence>
+      {open && (
+        <>
+          <motion.div className="m-modal-overlay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} />
+          <div className="m-modal-shell" role="dialog" aria-modal="true" aria-label="Book a live demo">
+            <motion.div className="m-modal-panel" initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.96 }} transition={{ duration: 0.25 }}>
+              <button type="button" className="m-modal-close" onClick={onClose} aria-label="Close booking dialog">×</button>
+              <iframe src={CALENDLY_LINK} title="Book a live demo with Servd" />
+            </motion.div>
+          </div>
+        </>
+      )}
+    </AnimatePresence>
+  );
+}
+
+function Footer({ onOpenDemo }) {
+  return (
+    <footer className="m-footer">
+      <div className="m-wrap m-footer-inner">
+        <div>
+          <a href="#top" className="m-wordmark">
+            <span className="m-wordmark-mark" aria-hidden="true" />
+            <span className="m-wordmark-text">Servd</span>
+          </a>
+          <p>QR ordering with a human check before it hits the kitchen.</p>
+        </div>
+        <div className="m-footer-links">
+          <a href="/feature-sheet.html" target="_blank" rel="noopener">Feature Sheet (PDF)</a>
+          <button type="button" onClick={onOpenDemo} className="m-btn m-btn-ghost">Book a Live Demo</button>
+        </div>
+      </div>
+    </footer>
+  );
+}
+
+function readReducedMotionPref() {
+  try {
+    return localStorage.getItem(REDUCED_MOTION_KEY) === "true";
+  } catch {
+    return false;
+  }
+}
+
+export default function MarketingApp() {
+  const [demoOpen, setDemoOpen] = useState(false);
+  const [reducedMotion, setReducedMotion] = useState(readReducedMotionPref);
+
+  function toggleReducedMotion() {
+    setReducedMotion((v) => {
+      const next = !v;
+      try { localStorage.setItem(REDUCED_MOTION_KEY, String(next)); } catch { /* ignore */ }
+      return next;
+    });
+  }
+
+  return (
+    <MotionConfig reducedMotion={reducedMotion ? "always" : "user"}>
+      <div className="m-page">
+        <Nav onOpenDemo={() => setDemoOpen(true)} reducedMotion={reducedMotion} onToggleReducedMotion={toggleReducedMotion} />
+        <main>
+          <Hero onOpenDemo={() => setDemoOpen(true)} />
+          <HowItWorks />
+          <Features />
+          <QrFlow />
+          <OwnerOverview />
+          <StaffWorkflow />
+          <Pricing />
+          <SocialProof />
+          <Faq />
+          <FinalCta onOpenDemo={() => setDemoOpen(true)} />
+        </main>
+        <Footer onOpenDemo={() => setDemoOpen(true)} />
+        <DemoModal open={demoOpen} onClose={() => setDemoOpen(false)} />
+      </div>
+    </MotionConfig>
+  );
+}
