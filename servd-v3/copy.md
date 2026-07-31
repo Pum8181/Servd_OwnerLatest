@@ -9,6 +9,41 @@ Anything marked **[PLACEHOLDER]** is fabricated for layout/demo purposes
 and must not be published as if real (no signed client, no finalized
 pricing exists yet as of this writing).
 
+## About Us
+
+The About section's founder bio is a **first draft**, not a verified
+biography — no specific claims about years of experience, past
+employers, or education are made because none were confirmed with
+Pankaj. Replace the generic lines with real specifics whenever provided.
+
+**Eyebrow:** About Servd
+**Headline:** Built by someone who kept noticing the same thing.
+**Body:** I'm Pankaj Singh — the developer behind Servd, not a company
+that hired one. I kept seeing the same scene play out at restaurant
+after restaurant: a server stretched thin across a full floor, a table
+quietly waiting just to place an order, food written off at close
+because there was no fast way to mark it down while it still had
+buyers. That's not a big, abstract industry problem — it's a specific,
+fixable one, and fixing specific problems for real businesses is the
+kind of software I actually want to build. I write every line of Servd
+myself and test it against a real, live menu, not a demo dataset built
+to look good in a deck. Servd is built in Burnaby, British Columbia —
+but the problem isn't a Burnaby problem. A busy Friday shift and a
+walk-in cooler that doesn't sell itself down by close looks the same at
+an independent restaurant anywhere. That's who this is for.
+
+**Where We Serve card:**
+- Headquartered: Burnaby, British Columbia, Canada
+- Serving: Independent restaurants across Canada (all 10 provinces + 3 territories listed as pills)
+- Expanding: United States, with a long-term vision of reaching independent restaurants everywhere
+
+## Contact
+
+Direct email, shown prominently in the Contact/Final CTA section
+(not buried in a form-only page): **pankaj_singh@servd.tech**,
+Burnaby, British Columbia, Canada. The Formspree contact form stays as
+the secondary option for people who'd rather not open their email app.
+
 ## Positioning (read this before editing anything else)
 
 Servd is **not a POS replacement** — it's a menu and ordering layer that

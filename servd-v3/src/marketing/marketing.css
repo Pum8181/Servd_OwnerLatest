@@ -2,7 +2,13 @@
    Uses the refined --m-* tokens (tokens.css in this folder), loaded
    after the shared app tokens so the reset rules (body/h1-h4/img
    defaults) still apply, colors and type scale are marketing-specific. */
-.m-page { background: var(--m-surface); color: var(--m-ink); overflow-x: hidden; font-family: var(--m-font-body); }
+/* FIX (readability): nothing in this file or the shared tokens set a
+   body line-height, so paragraph text was rendering at the browser
+   default (~1.15–1.2) — noticeably cramped for anything longer than a
+   headline. 1.65 on the page root, inherited everywhere text doesn't
+   explicitly override it (headings already set their own via the
+   shared tokens.css). */
+.m-page { background: var(--m-surface); color: var(--m-ink); overflow-x: hidden; font-family: var(--m-font-body); line-height: 1.65; }
 .m-page h1, .m-page h2, .m-page h3 { font-family: var(--m-font-display); color: var(--m-ink); }
 .m-wrap { max-width: 1180px; margin: 0 auto; padding: 0 1.5rem; }
 .m-section { padding: 6.5rem 0; position: relative; }
@@ -27,6 +33,7 @@
   transition: transform 0.15s ease, box-shadow 0.15s ease; min-height: 44px;
 }
 @media (hover: hover) and (pointer: fine) { .m-btn:hover { transform: translateY(-2px); } }
+.m-btn:active { transform: scale(0.96); }
 .m-btn-primary { background: var(--m-primary); color: var(--m-surface); box-shadow: 0 10px 26px rgba(26, 54, 38, 0.3); }
 .m-btn-primary:hover { box-shadow: 0 14px 32px rgba(26, 54, 38, 0.4); }
 .m-btn-ghost { background: transparent; color: var(--m-ink); border: 1.5px solid var(--m-line); }
@@ -40,6 +47,15 @@
 .m-nav-bg {
   position: absolute; inset: 0; background: var(--m-surface);
   border-bottom: 1px solid var(--m-line); backdrop-filter: blur(10px);
+}
+/* Thin scroll-progress line under the nav — a common "polished product
+   site" cue that also just quietly reassures a reader how much of the
+   page is left. transform-origin left + scaleX (driven by Motion's
+   scrollYProgress) instead of animating width, so it's GPU-composited
+   and doesn't cause layout thrash on scroll. */
+.m-scroll-progress {
+  position: absolute; left: 0; right: 0; bottom: 0; height: 2px;
+  background: var(--m-accent); transform-origin: 0% 50%; z-index: 1;
 }
 .m-nav-inner {
   position: relative; max-width: 1180px; margin: 0 auto; padding: 1rem 1.5rem;
@@ -97,7 +113,17 @@
 }
 
 /* ── Hero ────────────────────────────────────────────────────────── */
-.m-hero { padding: 5.5rem 0 4.5rem; overflow: hidden; }
+.m-hero { padding: 5.5rem 0 4.5rem; overflow: hidden; position: relative; }
+/* A soft, off-center glow rather than a flat cream field — adds depth
+   without a photo or a heavier gradient that would fight the device
+   mockup for attention. Purely decorative, so it's excluded from
+   screen readers and doesn't block clicks on anything beneath it. */
+.m-hero::before {
+  content: ""; position: absolute; top: -10%; right: -10%; width: 55%; aspect-ratio: 1;
+  background: radial-gradient(circle, rgba(193, 80, 43, 0.1), transparent 70%);
+  pointer-events: none; z-index: 0;
+}
+.m-hero .m-wrap { position: relative; z-index: 1; }
 .m-hero-grid { display: grid; grid-template-columns: 1fr; gap: 3.5rem; align-items: center; }
 @media (min-width: 960px) { .m-hero-grid { grid-template-columns: 1.05fr 0.95fr; gap: 2.5rem; } }
 .m-hero-h1 {
@@ -168,6 +194,30 @@
   .m-device-stack { min-height: 380px; }
   .m-tablet-mock { width: 78%; }
   .m-phone-mock { width: 68%; right: 4%; }
+}
+
+/* ── About ──────────────────────────────────────────────────────── */
+.m-about-grid { display: grid; grid-template-columns: 1fr; gap: 2.5rem; align-items: start; }
+@media (min-width: 900px) { .m-about-grid { grid-template-columns: 1.1fr 0.9fr; } }
+.m-about-grid .m-section-sub { margin-top: 0; margin-bottom: 1.1rem; max-width: none; }
+.m-about-grid .m-section-sub:last-child { margin-bottom: 0; }
+
+.m-where-card {
+  background: var(--m-white); border-radius: var(--m-radius); padding: 1.75rem;
+  box-shadow: var(--m-shadow);
+}
+.m-where-card h3 { font-size: var(--m-text-h3); margin-bottom: 1.1rem; }
+.m-where-row { margin-bottom: 1rem; }
+.m-where-row:last-child { margin-bottom: 0; }
+.m-where-label {
+  display: block; font-size: 0.6875rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.05em; color: var(--m-accent-deep); margin-bottom: 0.2rem;
+}
+.m-where-value { font-size: 0.9375rem; }
+.m-province-pills { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 1rem; }
+.m-province-pill {
+  font-size: 0.6875rem; font-weight: 600; padding: 0.3rem 0.65rem; border-radius: var(--m-radius-pill);
+  background: var(--m-surface-alt); color: var(--m-muted);
 }
 
 /* ── Feature grid ───────────────────────────────────────────────── */
@@ -280,6 +330,17 @@
 .m-cta-ctas { display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; }
 .m-cta-trust { font-size: 0.8125rem; margin: 1.5rem 0 0 !important; }
 .m-cta-final .m-btn-primary { background: var(--m-surface); color: var(--m-primary); }
+
+/* Direct-email block inside the Contact/Final CTA section */
+.m-direct-contact { margin: 2rem 0 0.5rem; text-align: center; }
+.m-direct-contact-label { color: var(--m-ink-on-dark-muted); font-size: 0.875rem; margin-bottom: 0.5rem; }
+.m-direct-contact-email {
+  display: inline-block; font-family: var(--m-font-display); font-size: clamp(1.25rem, 1rem + 1.5vw, 1.75rem);
+  font-weight: 600; color: var(--m-surface); text-decoration: none; border-bottom: 2px solid transparent;
+  transition: border-color 0.2s ease;
+}
+@media (hover: hover) and (pointer: fine) { .m-direct-contact-email:hover { border-color: currentColor; } }
+.m-direct-contact-location { color: var(--m-ink-on-dark-muted); font-size: 0.8125rem; margin-top: 0.4rem; }
 
 /* Contact / demo form (Formspree-wired) */
 .m-contact-form { background: var(--m-white); color: var(--m-ink); border-radius: var(--m-radius); padding: 2rem; text-align: left; margin-top: 2.5rem; box-shadow: var(--m-shadow-lg); width: 100%; max-width: 32rem; }

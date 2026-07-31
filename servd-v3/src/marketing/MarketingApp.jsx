@@ -36,21 +36,24 @@ function Reveal({ children, delay = 0, y = 28, className = "", as = "div", ...re
 }
 
 function Nav({ onOpenDemo, reducedMotion, onToggleReducedMotion }) {
-  const { scrollY } = useScroll();
+  const { scrollY, scrollYProgress } = useScroll();
   const bgOpacity = useTransform(scrollY, [0, 80], [0, 1]);
   const [menuOpen, setMenuOpen] = useState(false);
 
   const links = [
+    { href: "#about", label: "About" },
     { href: "#demo", label: "See The Demo" },
     { href: "#features", label: "Features" },
     { href: "#owner", label: "Owner Dashboard" },
     { href: "#pricing", label: "Pricing" },
     { href: "#faq", label: "FAQ" },
+    { href: "#contact", label: "Contact" },
   ];
 
   return (
     <header className="m-nav">
       <motion.div className="m-nav-bg" style={{ opacity: bgOpacity }} />
+      <motion.div className="m-scroll-progress" style={{ scaleX: scrollYProgress }} aria-hidden="true" />
       <div className="m-nav-inner">
         <a href="#top" className="m-wordmark">
           <span className="m-wordmark-mark" aria-hidden="true" />
@@ -235,6 +238,65 @@ function Hero({ onOpenDemo }) {
   );
 }
 
+// NOTE for whoever edits this next: the founder bio below is a first
+// draft written to match the tone Pankaj asked for (developer + genuine
+// stake in the problem), not a verified biography — no specific claims
+// about years of experience, past employers, or education are made
+// because none were confirmed. Replace the generic lines with real
+// specifics whenever they're provided.
+function AboutUs() {
+  const provinces = [
+    "British Columbia", "Alberta", "Saskatchewan", "Manitoba", "Ontario", "Quebec",
+    "New Brunswick", "Nova Scotia", "Prince Edward Island", "Newfoundland & Labrador",
+    "Yukon", "Northwest Territories", "Nunavut",
+  ];
+
+  return (
+    <section id="about" className="m-section m-section-tint">
+      <div className="m-wrap m-about-grid">
+        <Reveal>
+          <p className="m-eyebrow">About Servd</p>
+          <h2>Built by someone who kept noticing the same thing.</h2>
+          <p className="m-section-sub">
+            I'm Pankaj Singh — the developer behind Servd, not a company that hired one. I kept
+            seeing the same scene play out at restaurant after restaurant: a server stretched thin
+            across a full floor, a table quietly waiting just to place an order, food written off at
+            close because there was no fast way to mark it down while it still had buyers. That's not
+            a big, abstract industry problem — it's a specific, fixable one, and fixing specific
+            problems for real businesses is the kind of software I actually want to build. I write
+            every line of Servd myself and test it against a real, live menu, not a demo dataset built
+            to look good in a deck.
+          </p>
+          <p className="m-section-sub">
+            Servd is built in Burnaby, British Columbia — but the problem isn't a Burnaby problem.
+            A busy Friday shift and a walk-in cooler that doesn't sell itself down by close looks the
+            same at an independent restaurant anywhere. That's who this is for.
+          </p>
+        </Reveal>
+
+        <Reveal delay={0.15} className="m-where-card">
+          <h3>Where We Serve</h3>
+          <div className="m-where-row">
+            <span className="m-where-label">Headquartered</span>
+            <span className="m-where-value">Burnaby, British Columbia, Canada</span>
+          </div>
+          <div className="m-where-row">
+            <span className="m-where-label">Serving</span>
+            <span className="m-where-value">Independent restaurants across Canada</span>
+          </div>
+          <div className="m-province-pills">
+            {provinces.map((p) => <span className="m-province-pill" key={p}>{p}</span>)}
+          </div>
+          <div className="m-where-row">
+            <span className="m-where-label">Expanding</span>
+            <span className="m-where-value">United States, with a long-term vision of reaching independent restaurants everywhere</span>
+          </div>
+        </Reveal>
+      </div>
+    </section>
+  );
+}
+
 // The full walkthrough, start to finish — scan through kitchen. This is
 // the page's centerpiece "demo," so each step gets a real visual, not
 // just a numbered paragraph: a small mockup chip showing exactly what
@@ -355,7 +417,7 @@ function OwnerOverview() {
   const pending = ["Table 5 — Split by item", "Table 9 — One bill"];
   const inKitchen = ["Table 3 — Split equally"];
   return (
-    <section id="owner" className="m-section m-section-tint">
+    <section id="owner" className="m-section">
       <div className="m-wrap m-owner-grid">
         <Reveal>
           <p className="m-eyebrow">Your Whole Floor, At A Glance</p>
@@ -414,7 +476,7 @@ function Pricing() {
     },
   ];
   return (
-    <section id="pricing" className="m-section">
+    <section id="pricing" className="m-section m-section-tint">
       <div className="m-wrap">
         <Reveal className="m-section-head">
           <p className="m-eyebrow">Simple, No-Commission Pricing</p>
@@ -552,7 +614,7 @@ function ContactForm() {
 
 function FinalCta({ onOpenDemo }) {
   return (
-    <section id="book-demo" className="m-section m-cta-final">
+    <section id="contact" className="m-section m-cta-final">
       <div className="m-wrap">
         <Reveal className="m-cta-inner">
           <h2>See it running on a real table, live on the call.</h2>
@@ -568,7 +630,14 @@ function FinalCta({ onOpenDemo }) {
               Download Feature Sheet
             </a>
           </div>
-          <p className="m-cta-trust">Built for independent restaurants in Metro Vancouver, BC · No commissions, ever.</p>
+          <p className="m-cta-trust">Built for independent restaurants across Canada · No commissions, ever.</p>
+
+          <div className="m-direct-contact">
+            <p className="m-direct-contact-label">Prefer to just email me directly?</p>
+            <a href="mailto:pankaj_singh@servd.tech" className="m-direct-contact-email">pankaj_singh@servd.tech</a>
+            <p className="m-direct-contact-location">Burnaby, British Columbia, Canada</p>
+          </div>
+
           <ContactForm />
         </Reveal>
       </div>
@@ -640,6 +709,7 @@ export default function MarketingApp() {
         <Nav onOpenDemo={() => setDemoOpen(true)} reducedMotion={reducedMotion} onToggleReducedMotion={toggleReducedMotion} />
         <main>
           <Hero onOpenDemo={() => setDemoOpen(true)} />
+          <AboutUs />
           <DemoProcess />
           <Features />
           <OwnerOverview />

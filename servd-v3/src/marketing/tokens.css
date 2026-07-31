@@ -38,7 +38,8 @@
   --m-danger: #9C3A2A;         /* muted brick red — form errors, destructive-adjacent states */
 
   --m-ink: #211B14;            /* primary text color, warm near-black not pure black */
-  --m-white: #FFFFFF;
+  --m-white: #FFFEFA;          /* barely-warm white for cards — pure #FFF read as a cold, flat
+                                   cutout against the warm cream page background; this blends */
   --m-line: rgba(33, 27, 20, 0.13);
   --m-line-on-dark: rgba(251, 246, 236, 0.16);
   --m-ink-on-dark: #FBF6EC;
