@@ -12,7 +12,11 @@
 [build]
   base = "servd-v3"
   command = "npm run build"
-  publish = "servd-v3/dist"
+  # FIX: when `base` is set, Netlify resolves `publish` RELATIVE TO that
+  # base directory, not the repo root — "servd-v3/dist" here resolved to
+  # "servd-v3/servd-v3/dist" (doesn't exist), which is what broke the
+  # build. Just "dist" is correct once `base` is already "servd-v3".
+  publish = "dist"
 
 [[redirects]]
   from = "/"
