@@ -2,11 +2,11 @@
 
 Three URLs, from this one working folder:
 
-- **Customer app** → GitHub repo `Servd-Customer` → GitHub Pages: `https://<you>.github.io/Servd-Customer/`
-- **Owner dashboard** → GitHub repo `Servd-Main` → GitHub Pages: `https://<you>.github.io/Servd-Main/`
+- **Customer app** → GitHub repo `Servd_Customer_Latest` → GitHub Pages: `https://<you>.github.io/Servd_Customer_Latest/`
+- **Owner dashboard** → GitHub repo `Servd_OwnerLatest` → GitHub Pages: `https://<you>.github.io/Servd_OwnerLatest/`
 - **Marketing site** → Netlify, on your real domain: `https://servd.tech`
 
-Both `Servd-Customer` and `Servd-Main` are full mirrors of this entire
+Both `Servd_Customer_Latest` and `Servd_OwnerLatest` are full mirrors of this entire
 project (same commits, same files) — what makes them behave differently
 is a single GitHub Actions workflow file
 (`.github/workflows/deploy-pages.yml`) that checks **which repo it's
@@ -26,13 +26,13 @@ sidesteps that entirely.
 ## 1. Push to both repos
 
 Already done as of this setup — both remotes are configured
-(`servdcustomer`, `servdmain`) and pushed. For future reference:
+(`servdcustomerlatest`, `servdownerlatest`) and pushed. For future reference:
 
 ```bash
-git remote add servdcustomer https://github.com/Pum8181/Servd-Customer.git
-git remote add servdmain     https://github.com/Pum8181/Servd-Main.git
-git push servdcustomer main
-git push servdmain main
+git remote add servdcustomerlatest https://github.com/Pum8181/Servd_Customer_Latest.git
+git remote add servdownerlatest     https://github.com/Pum8181/Servd_OwnerLatest.git
+git push servdcustomerlatest main
+git push servdownerlatest main
 ```
 
 ## 2. Turn on GitHub Pages — do this in BOTH repos
@@ -42,16 +42,16 @@ The first push already triggered the workflow, which creates a
 source code). Once that first run finishes (check the **Actions** tab —
 "Deploy to GitHub Pages" should show green):
 
-In each repo (`Servd-Customer` and `Servd-Main`) on github.com:
+In each repo (`Servd_Customer_Latest` and `Servd_OwnerLatest`) on github.com:
 
 1. **Settings** → **Pages** (left sidebar).
 2. Under "Build and deployment" → **Source**, choose **"Deploy from a
    branch"** (NOT "GitHub Actions" this time).
 3. **Branch**: select `gh-pages`, folder `/ (root)` → **Save**.
 4. Wait a minute, then:
-   - `Servd-Customer` → `https://<you>.github.io/Servd-Customer/` (customer menu)
-   - `Servd-Main` → `https://<you>.github.io/Servd-Main/` (owner dashboard)
-5. Every future `git push servdcustomer main` / `git push servdmain main`
+   - `Servd_Customer_Latest` → `https://<you>.github.io/Servd_Customer_Latest/` (customer menu)
+   - `Servd_OwnerLatest` → `https://<you>.github.io/Servd_OwnerLatest/` (owner dashboard)
+5. Every future `git push servdcustomerlatest main` / `git push servdownerlatest main`
    rebuilds `gh-pages` automatically, and Pages picks up the change
    within a minute or two — no need to touch the Source setting again.
 
@@ -59,8 +59,8 @@ In each repo (`Servd-Customer` and `Servd-Main`) on github.com:
 
 Netlify only needs ONE of these two repos connected — since both are
 full mirrors, either works identically for building the marketing site
-(they contain the same `netlify.toml`). Pick `Servd-Customer` unless
-you'd rather use `Servd-Main`.
+(they contain the same `netlify.toml`). Pick `Servd_Customer_Latest` unless
+you'd rather use `Servd_OwnerLatest`.
 
 1. [app.netlify.com](https://app.netlify.com) → **Add new site** →
    **Import an existing project** → connect GitHub → pick the repo.
@@ -115,19 +115,19 @@ code. What's left needs your own Google account, so I can't do it:
 
 The owner dashboard's QR Codes tab defaults its "Menu page URL" to
 whatever domain it's currently running on — since it now lives at
-`https://<you>.github.io/Servd-Main/`, generating a QR there will
+`https://<you>.github.io/Servd_OwnerLatest/`, generating a QR there will
 default to that domain, not the customer app's. Since they're two
 different domains, always double-check the "Menu page URL" field before
-generating a QR and paste in the `Servd-Customer` Pages URL by hand
-(`https://<you>.github.io/Servd-Customer/index_v3.html`).
+generating a QR and paste in the `Servd_Customer_Latest` Pages URL by hand
+(`https://<you>.github.io/Servd_Customer_Latest/index_v3.html`).
 
 ## Updating the site after this initial setup
 
 ```bash
 git add .
 git commit -m "describe what changed"
-git push servdcustomer main
-git push servdmain main
+git push servdcustomerlatest main
+git push servdownerlatest main
 ```
 
 Both pushes trigger their own repo's GitHub Actions run, which updates
