@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Servd — One-Page Feature Sheet</title>
+<meta name="description" content="Servd feature sheet: QR ordering with a human confirmation step before orders reach the kitchen. Printable one-pager." />
+<style>
+  @import url("https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap");
+  :root {
+    --primary: #1A3626; --primary-dark: #0F2118; --accent: #C1502B; --accent-deep: #8A3A1F;
+    --surface: #FBF6EC; --surface-alt: #F1E7D5; --muted: #6E6154; --ink: #211B14; --line: rgba(33,27,20,0.14);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; font-family: "Inter", system-ui, sans-serif; background: var(--surface); color: var(--ink);
+    line-height: 1.5; -webkit-font-smoothing: antialiased;
+  }
+  h1, h2 { font-family: "Fraunces", Georgia, serif; margin: 0; }
+  .sheet { max-width: 780px; margin: 0 auto; padding: 2.5rem 2rem 3rem; }
+  .toolbar {
+    display: flex; justify-content: flex-end; gap: 0.75rem; margin-bottom: 1.5rem;
+  }
+  .btn {
+    display: inline-flex; align-items: center; gap: 0.5rem; font-weight: 700; font-size: 0.875rem;
+    padding: 0.7rem 1.3rem; border-radius: 999px; border: none; cursor: pointer; text-decoration: none;
+    background: var(--primary); color: var(--surface);
+  }
+  .btn-ghost { background: transparent; color: var(--ink); border: 1.5px solid var(--line); }
+  header.brand { display: flex; align-items: center; justify-content: space-between; margin-bottom: 2rem; }
+  .wordmark { display: flex; align-items: center; gap: 0.6rem; }
+  .mark { width: 30px; height: 30px; border-radius: 9px; background: var(--primary); position: relative; }
+  .mark::before { content: ""; position: absolute; inset: 6px; border: 2px solid var(--surface); border-radius: 3px; }
+  .mark::after { content: ""; position: absolute; right: -3px; bottom: -3px; width: 12px; height: 12px; border-radius: 50%; background: var(--accent); border: 2px solid var(--surface); }
+  .wordmark-text { font-family: "Fraunces", serif; font-weight: 700; font-size: 1.25rem; }
+  .tagline { font-size: 0.8125rem; color: var(--muted); text-align: right; max-width: 16rem; }
+  h1 { font-size: 1.875rem; font-weight: 600; margin-bottom: 0.75rem; letter-spacing: -0.01em; }
+  .lede { font-size: 1.0625rem; color: var(--muted); max-width: 34rem; margin-bottom: 2rem; }
+  .steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 2.25rem; }
+  .step { border-top: 2px solid var(--primary); padding-top: 0.6rem; }
+  .step .n { font-family: "Fraunces", serif; font-size: 1.5rem; color: var(--accent); opacity: 0.5; display: block; }
+  .step h3 { font-size: 0.9375rem; margin: 0.2rem 0 0.3rem; font-family: "Inter", sans-serif; font-weight: 700; }
+  .step p { font-size: 0.8125rem; color: var(--muted); margin: 0; }
+  .features { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.9rem 1.5rem; margin-bottom: 2.25rem; }
+  .feature { display: flex; gap: 0.6rem; align-items: flex-start; font-size: 0.9375rem; }
+  .feature::before { content: "✓"; color: var(--primary); font-weight: 700; flex-shrink: 0; }
+  .cta-box {
+    background: var(--primary-dark); color: var(--surface); border-radius: 16px; padding: 1.5rem 1.75rem;
+    display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;
+  }
+  .cta-box h2 { font-size: 1.125rem; margin-bottom: 0.3rem; }
+  .cta-box p { margin: 0; font-size: 0.8125rem; color: rgba(251,246,236,0.75); }
+  .cta-box .btn { background: var(--surface); color: var(--primary-dark); }
+  footer.meta { margin-top: 2rem; font-size: 0.75rem; color: var(--muted); text-align: center; }
+
+  @media print {
+    .toolbar { display: none; }
+    body { background: white; }
+    .sheet { padding: 0; max-width: 100%; }
+    @page { size: letter; margin: 14mm; }
+  }
+  @media (max-width: 640px) {
+    .steps, .features { grid-template-columns: 1fr; }
+    header.brand { flex-direction: column; align-items: flex-start; gap: 0.75rem; }
+    .tagline { text-align: left; }
+  }
+</style>
+</head>
+<body>
+  <div class="sheet">
+    <div class="toolbar">
+      <button type="button" class="btn btn-ghost" onclick="window.close()">Close tab</button>
+      <button type="button" class="btn" onclick="window.print()">Print / Save as PDF</button>
+    </div>
+
+    <header class="brand">
+      <div class="wordmark">
+        <span class="mark" aria-hidden="true"></span>
+        <span class="wordmark-text">Servd</span>
+      </div>
+      <p class="tagline">QR ordering with a human check before it hits the kitchen.</p>
+    </header>
+
+    <h1>The order doesn't reach your kitchen until a person checks it.</h1>
+    <p class="lede">
+      Guests scan a table's QR, order from their own phone, and split the bill however they want,
+      in one tap. Every order still pauses for a quick human confirmation first — the wrong spice
+      level or a mis-tapped table never becomes wasted food.
+    </p>
+
+    <div class="steps">
+      <div class="step"><span class="n">01</span><h3>Guest scans and orders</h3><p>No app to install — opens straight in their phone's browser.</p></div>
+      <div class="step"><span class="n">02</span><h3>It pauses for a human check</h3><p>Lands in a Needs Confirmation queue, separate from the kitchen.</p></div>
+      <div class="step"><span class="n">03</span><h3>One tap, it's confirmed</h3><p>Staff catch mistakes, fix them, and confirm before it's cooked.</p></div>
+      <div class="step"><span class="n">04</span><h3>Bill however they want</h3><p>One bill, split evenly, or split per person — one tap.</p></div>
+    </div>
+
+    <div class="features">
+      <div class="feature">Spice &amp; variant selector, per dish</div>
+      <div class="feature">Human confirmation step before the kitchen</div>
+      <div class="feature">Per-guest order tracking at shared tables</div>
+      <div class="feature">Flexible split billing, one tap</div>
+      <div class="feature">Live sold-out &amp; markdown toggles</div>
+      <div class="feature">Branded, table-aware QR generator built in</div>
+      <div class="feature">Owner dashboard: live Needs Review / In Kitchen queues</div>
+      <div class="feature">Flat monthly rate — never a commission on your sales</div>
+    </div>
+
+    <div class="cta-box">
+      <div>
+        <h2>See it running on a real table.</h2>
+        <p>Book a live 30-minute walkthrough — no slide deck, the actual product.</p>
+      </div>
+      <a class="btn" href="https://calendly.com/pankaj_singh-servd/30min" target="_blank" rel="noopener">Book a Live Demo</a>
+    </div>
+
+    <footer class="meta">Built for independent restaurants in Metro Vancouver, BC · servd.tech</footer>
+  </div>
+</body>
+</html>
