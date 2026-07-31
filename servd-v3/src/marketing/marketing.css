@@ -341,6 +341,24 @@
 }
 @media (hover: hover) and (pointer: fine) { .m-direct-contact-email:hover { border-color: currentColor; } }
 .m-direct-contact-location { color: var(--m-ink-on-dark-muted); font-size: 0.8125rem; margin-top: 0.4rem; }
+.m-whatsapp-link {
+  display: inline-flex; align-items: center; gap: 0.4rem; margin-top: 0.9rem;
+  font-size: 0.8125rem; font-weight: 600; color: var(--m-ink-on-dark-muted); text-decoration: none;
+}
+.m-whatsapp-link svg { color: #25D366; flex-shrink: 0; }
+@media (hover: hover) and (pointer: fine) { .m-whatsapp-link:hover { color: var(--m-surface); } }
+
+/* Floating click-to-chat button — fixed to the viewport (not the page),
+   sits above everything including the Calendly modal's own overlay so
+   it's reachable even mid-modal. WhatsApp's own brand green, since a
+   forest-green button here would read as "part of the page," not as
+   the universally recognized WhatsApp affordance people already know. */
+.m-whatsapp-btn {
+  position: fixed; right: 1.25rem; bottom: 1.25rem; z-index: 210;
+  width: 56px; height: 56px; border-radius: 50%; background: #25D366; color: white;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 8px 24px rgba(37, 211, 102, 0.45);
+}
 
 /* Contact / demo form (Formspree-wired) */
 .m-contact-form { background: var(--m-white); color: var(--m-ink); border-radius: var(--m-radius); padding: 2rem; text-align: left; margin-top: 2.5rem; box-shadow: var(--m-shadow-lg); width: 100%; max-width: 32rem; }

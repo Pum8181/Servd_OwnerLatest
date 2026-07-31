@@ -2,6 +2,10 @@ import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence, MotionConfig, useScroll, useTransform } from "motion/react";
 
 const CALENDLY_LINK = "https://calendly.com/pankaj_singh-servd/30min";
+// wa.me links take the number with country code, digits only — no
+// spaces, dashes, or leading "+". 778 is a Canadian (BC) area code, so
+// country code 1.
+const WHATSAPP_LINK = "https://wa.me/17782018181";
 const FORMSPREE_ENDPOINT = "https://formspree.io/f/mgogdjrb";
 const DEMO_MENU_URL = "https://servd.tech/index_v3.html?table=5";
 const REDUCED_MOTION_KEY = "servd_marketing_reduced_motion";
@@ -636,6 +640,12 @@ function FinalCta({ onOpenDemo }) {
             <p className="m-direct-contact-label">Prefer to just email me directly?</p>
             <a href="mailto:pankaj_singh@servd.tech" className="m-direct-contact-email">pankaj_singh@servd.tech</a>
             <p className="m-direct-contact-location">Burnaby, British Columbia, Canada</p>
+            <a href={WHATSAPP_LINK} target="_blank" rel="noopener" className="m-whatsapp-link">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38a9.9 9.9 0 0 0 4.79 1.22h.01c5.46 0 9.9-4.45 9.9-9.9C21.96 6.45 17.5 2 12.04 2Zm5.8 14.03c-.24.68-1.2 1.25-1.96 1.4-.53.11-1.22.2-3.53-.76-2.96-1.22-4.87-4.2-5.02-4.4-.14-.19-1.2-1.6-1.2-3.05 0-1.46.75-2.17 1.02-2.47.24-.27.53-.34.7-.34.18 0 .35 0 .5.01.16.01.38-.06.6.45.24.57.8 1.98.87 2.12.07.14.12.31.02.5-.09.19-.14.31-.28.47-.14.16-.29.36-.42.48-.14.14-.28.28-.12.55.16.27.72 1.19 1.55 1.92 1.06.95 1.96 1.24 2.23 1.38.27.14.43.12.59-.07.16-.19.68-.79.86-1.06.18-.27.36-.22.6-.13.25.09 1.58.75 1.85.88.27.14.45.2.51.32.07.11.07.65-.17 1.33Z" />
+              </svg>
+              Or message on WhatsApp
+            </a>
           </div>
 
           <ContactForm />
@@ -683,6 +693,31 @@ function Footer({ onOpenDemo }) {
   );
 }
 
+// Fixed, always-reachable click-to-chat button — the standard pattern
+// visitors already recognize from other business sites, so it doesn't
+// need explaining.
+function WhatsAppButton() {
+  return (
+    <motion.a
+      href={WHATSAPP_LINK}
+      target="_blank"
+      rel="noopener"
+      className="m-whatsapp-btn"
+      aria-label="Message Servd on WhatsApp"
+      title="Message us on WhatsApp"
+      initial={{ opacity: 0, scale: 0.6 }}
+      animate={{ opacity: 1, scale: 1 }}
+      whileHover={{ scale: 1.08 }}
+      whileTap={{ scale: 0.94 }}
+      transition={{ duration: 0.4, delay: 0.6 }}
+    >
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+        <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38a9.9 9.9 0 0 0 4.79 1.22h.01c5.46 0 9.9-4.45 9.9-9.9C21.96 6.45 17.5 2 12.04 2Zm5.8 14.03c-.24.68-1.2 1.25-1.96 1.4-.53.11-1.22.2-3.53-.76-2.96-1.22-4.87-4.2-5.02-4.4-.14-.19-1.2-1.6-1.2-3.05 0-1.46.75-2.17 1.02-2.47.24-.27.53-.34.7-.34.18 0 .35 0 .5.01.16.01.38-.06.6.45.24.57.8 1.98.87 2.12.07.14.12.31.02.5-.09.19-.14.31-.28.47-.14.16-.29.36-.42.48-.14.14-.28.28-.12.55.16.27.72 1.19 1.55 1.92 1.06.95 1.96 1.24 2.23 1.38.27.14.43.12.59-.07.16-.19.68-.79.86-1.06.18-.27.36-.22.6-.13.25.09 1.58.75 1.85.88.27.14.45.2.51.32.07.11.07.65-.17 1.33Z" />
+      </svg>
+    </motion.a>
+  );
+}
+
 function readReducedMotionPref() {
   try {
     return localStorage.getItem(REDUCED_MOTION_KEY) === "true";
@@ -719,6 +754,7 @@ export default function MarketingApp() {
         </main>
         <Footer onOpenDemo={() => setDemoOpen(true)} />
         <DemoModal open={demoOpen} onClose={() => setDemoOpen(false)} />
+        <WhatsAppButton />
       </div>
     </MotionConfig>
   );
