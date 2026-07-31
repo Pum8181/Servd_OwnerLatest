@@ -5,7 +5,8 @@ const CALENDLY_LINK = "https://calendly.com/pankaj_singh-servd/30min";
 // wa.me links take the number with country code, digits only — no
 // spaces, dashes, or leading "+". 778 is a Canadian (BC) area code, so
 // country code 1.
-const WHATSAPP_LINK = "https://wa.me/17782018181";
+const WHATSAPP_PREFILL = "Hi! I'm reaching out about Servd for my restaurant — I have a few questions. (servd.tech)";
+const WHATSAPP_LINK = `https://wa.me/17782018181?text=${encodeURIComponent(WHATSAPP_PREFILL)}`;
 const FORMSPREE_ENDPOINT = "https://formspree.io/f/mgogdjrb";
 const DEMO_MENU_URL = "https://servd.tech/index_v3.html?table=5";
 const REDUCED_MOTION_KEY = "servd_marketing_reduced_motion";
