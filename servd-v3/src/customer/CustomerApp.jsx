@@ -10,6 +10,8 @@ import BottomNav from "./components/BottomNav";
 import GuestModal from "./components/GuestModal";
 import SplitModal from "./components/SplitModal";
 import CartSheet from "./components/CartSheet";
+import ServerRequestModal from "./components/ServerRequestModal";
+import { useServerRequest } from "./useServerRequest";
 
 const RESTAURANT_NAME = "Servd";
 
@@ -42,6 +44,8 @@ export default function CustomerApp() {
   const [pendingItem, setPendingItem] = useState(null);
   const [toast, setToast] = useState("");
   const [loadError, setLoadError] = useState("");
+
+  const serverRequest = useServerRequest(table);
 
   useEffect(() => subscribeMenu(setMenuItems, (err) => setLoadError(friendlyFirebaseError(err, "load the menu"))), []);
 
@@ -189,6 +193,10 @@ export default function CustomerApp() {
     }
   }
 
+  function handleChangeSplit() {
+    setSplitModalOpen(true);
+  }
+
   function handleSplitResolved(value) {
     setSplitPreference(value);
     sessionStorage.setItem("ic_split_preference", value);
@@ -225,11 +233,18 @@ export default function CustomerApp() {
   return (
     <div className="c-app">
       <div className="c-wrap">
-        <Header restaurantName={RESTAURANT_NAME} search={search} onSearchChange={setSearch} onProfileClick={() => setNavTab("profile")} />
+        <Header
+          restaurantName={RESTAURANT_NAME}
+          search={search}
+          onSearchChange={setSearch}
+          onProfileClick={() => setNavTab("profile")}
+          onRequestHelp={serverRequest.openModal}
+          helpPending={serverRequest.pending}
+        />
 
-        {loadError && (
+        {(loadError || serverRequest.error) && (
           <div style={{ background: "rgba(217, 114, 75, 0.16)", color: "var(--accent)", padding: "0.75rem 1rem", borderRadius: "var(--radius-sm)", fontSize: "0.8125rem", marginBottom: "1rem" }}>
-            {loadError}
+            {loadError || serverRequest.error}
           </div>
         )}
 
@@ -300,7 +315,26 @@ export default function CustomerApp() {
 
       <GuestModal open={guestModalOpen} onResolve={handleGuestResolved} />
       <SplitModal open={splitModalOpen} onResolve={handleSplitResolved} />
-      <CartSheet open={cartOpen} cart={cart} total={total} onClose={() => setCartOpen(false)} onConfirm={handleConfirmOrder} submitting={submitting} />
+      <ServerRequestModal
+        open={serverRequest.modalOpen}
+        view={serverRequest.view}
+        table={table}
+        submitting={serverRequest.submitting}
+        remainingLabel={serverRequest.remainingLabel}
+        onClose={serverRequest.closeModal}
+        onChooseServer={serverRequest.chooseServer}
+        onChooseOnline={serverRequest.chooseOnline}
+      />
+      <CartSheet
+        open={cartOpen}
+        cart={cart}
+        total={total}
+        splitPreference={splitPreference}
+        onChangeSplit={handleChangeSplit}
+        onClose={() => setCartOpen(false)}
+        onConfirm={handleConfirmOrder}
+        submitting={submitting}
+      />
 
       {placed && (
         <>

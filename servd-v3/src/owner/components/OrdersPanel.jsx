@@ -11,7 +11,7 @@ import { approveOrder, rejectOrder, completeOrder, orderGuestName } from "../../
 // Kanban: "Needs Review" (pending, full action cards) and "In Kitchen"
 // (in_progress, already-approved orders on their way to the table),
 // each with a proper empty state instead of a blank box.
-export default function OrdersPanel({ orders, activeStaff }) {
+export default function OrdersPanel({ orders, activeStaff, menuItems }) {
   const [editingOrder, setEditingOrder] = useState(null);
   const pending = orders.filter((o) => o.status === "pending");
   const inProgress = orders.filter((o) => o.status === "in_progress");
@@ -64,7 +64,7 @@ export default function OrdersPanel({ orders, activeStaff }) {
         )}
       </div>
 
-      <OrderEditModal order={editingOrder} onClose={() => setEditingOrder(null)} approvedBy={activeStaff?.name} />
+      <OrderEditModal order={editingOrder} onClose={() => setEditingOrder(null)} approvedBy={activeStaff?.name} menuItems={menuItems} />
     </div>
   );
 }

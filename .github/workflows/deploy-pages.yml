@@ -1,10 +1,11 @@
 name: Deploy to GitHub Pages
 
-# This exact same workflow file is pushed to BOTH Servd-Customer and
-# Servd-Main. It figures out which single page to build from the
-# repo's own name:
-#   - repo "Servd-Main"  → builds owner_v3.html only
-#   - anything else (Servd-Customer, etc.) → builds index_v3.html
+# This exact same workflow file is pushed to both the customer-facing
+# repo and the owner-dashboard repo. It figures out which single page
+# to build from the repo's own name — any repo name containing "owner"
+# (case-insensitive, e.g. Servd_OwnerLatest, Servd-Main, ServdOwner)
+# builds owner_v3.html; anything else builds index_v3.html. This means
+# a future rename doesn't need this file edited again.
 #
 # Publishes to the `gh-pages` branch (classic method) rather than
 # GitHub's newer Actions-native Pages integration — that integration
@@ -47,7 +48,7 @@ jobs:
         run: |
           REPO_NAME="${GITHUB_REPOSITORY##*/}"
           echo "repo_name=$REPO_NAME" >> "$GITHUB_OUTPUT"
-          if [ "$REPO_NAME" = "Servd-Main" ]; then
+          if echo "$REPO_NAME" | grep -qi "owner"; then
             echo "target=owner" >> "$GITHUB_OUTPUT"
             echo "entry=owner_v3.html" >> "$GITHUB_OUTPUT"
           else

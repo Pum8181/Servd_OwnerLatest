@@ -72,6 +72,12 @@
 }
 .o-nav-item.active { background: var(--cream); color: var(--forest); }
 .o-nav-item svg { flex-shrink: 0; }
+.o-nav-badge {
+  margin-left: auto; background: var(--accent); color: white; font-size: 0.6875rem; font-weight: 700;
+  min-width: 20px; height: 20px; padding: 0 0.4rem; border-radius: 999px;
+  display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.o-nav-item.active .o-nav-badge { background: var(--accent-deep); }
 
 @media (max-width: 900px) {
   .o-sidebar { position: fixed; left: 0; top: 0; bottom: 0; z-index: 80; transform: translateX(-100%); transition: transform 0.25s ease; }
@@ -165,6 +171,35 @@
 .o-side-card { background: var(--white); border-radius: var(--radius-lg); padding: 1.25rem 1.5rem; box-shadow: var(--shadow-soft); }
 .o-side-card h3 { font-size: 1.0625rem; margin-bottom: 1rem; }
 
+/* ── Server Requests panel ─────────────────────────────────────────
+   Highlighted (accent-toned) cards deliberately stand out more than
+   the neutral order cards elsewhere — an open request is time-
+   sensitive in a different way than "needs review," it means a guest
+   is sitting there waiting right now. */
+.o-request-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1.1rem; }
+.o-request-card {
+  background: var(--white); border: 1.5px solid var(--accent); border-radius: var(--radius-lg);
+  padding: 1.25rem; box-shadow: var(--shadow-soft);
+}
+.o-request-card.is-in-progress { border-color: var(--line); }
+.o-request-card-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.3rem; }
+.o-request-table { font-weight: 700; font-size: 1.0625rem; }
+.o-request-status-pill {
+  font-size: 0.6875rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em;
+  padding: 0.25rem 0.6rem; border-radius: var(--radius-pill); background: var(--accent); color: white;
+}
+.o-request-status-pill.is-in-progress { background: var(--cream-deep); color: var(--ink-muted); }
+.o-request-time { display: block; font-size: 0.8125rem; color: var(--ink-muted); margin-bottom: 1rem; }
+.o-request-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.o-request-actions .o-btn-reject, .o-request-actions .o-btn-approve { padding: 0.55rem 1rem; font-size: 0.8125rem; }
+
+.o-request-history { background: var(--white); border-radius: var(--radius-md); box-shadow: var(--shadow-soft); overflow: hidden; }
+.o-request-history-row {
+  display: flex; justify-content: space-between; padding: 0.75rem 1.1rem; font-size: 0.8125rem;
+  color: var(--ink-muted); border-bottom: 1px solid var(--line);
+}
+.o-request-history-row:last-child { border-bottom: none; }
+
 /* ── Live Orders: two-column Kanban ───────────────────────────────── */
 .o-kanban-2col { display: grid; grid-template-columns: 1fr; gap: 1.5rem; }
 @media (min-width: 860px) { .o-kanban-2col { grid-template-columns: 1fr 1fr; align-items: start; } }
@@ -216,6 +251,11 @@
 .o-edit-line-info strong { display: block; font-size: 0.9375rem; }
 .o-edit-line-info span { font-size: 0.78125rem; color: var(--ink-muted); }
 .o-edit-line-remove { background: none; border: none; font-size: 1.1rem; color: var(--accent-deep); }
+.o-edit-add-row { display: flex; gap: 0.6rem; margin-top: 0.75rem; }
+.o-edit-add-row select {
+  flex: 1; padding: 0.65rem 0.75rem; border-radius: var(--radius-sm); border: 1.5px solid var(--line);
+  font-family: var(--font-body); font-size: 0.875rem; color: var(--ink); background: var(--white);
+}
 .o-qty-control {
   display: flex; align-items: center; gap: 0.5rem;
   background: var(--cream); border-radius: var(--radius-pill); padding: 0.25rem;

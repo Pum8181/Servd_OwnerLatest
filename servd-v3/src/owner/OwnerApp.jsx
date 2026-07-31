@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { subscribeOrders } from "../lib/orders";
 import { subscribeMenu } from "../lib/menu";
@@ -9,8 +9,11 @@ import SettingsPanel from "./components/SettingsPanel";
 import AnalyticsPanel from "./components/AnalyticsPanel";
 import StaffPanel from "./components/StaffPanel";
 import QrCodesPanel from "./components/QrCodesPanel";
+import ServerRequestsPanel from "./components/ServerRequestsPanel";
 import StaffLoginOverlay from "./components/StaffLoginOverlay";
 import { subscribeStaff } from "../lib/staff";
+import { subscribeAllRequests } from "../lib/serverRequests";
+import { playRequestChime } from "../lib/alertSound";
 import { friendlyFirebaseError } from "../lib/errors";
 
 const ACTIVE_STAFF_KEY = "servd_active_staff";
@@ -20,6 +23,7 @@ export default function OwnerApp() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [orders, setOrders] = useState([]);
   const [menuItems, setMenuItems] = useState([]);
+  const [serverRequests, setServerRequests] = useState([]);
   const [loadError, setLoadError] = useState("");
   const [activeStaff, setActiveStaff] = useState(() => {
     try {
@@ -34,6 +38,7 @@ export default function OwnerApp() {
   // problem instead of leaving orders/menu silently stuck empty.
   useEffect(() => subscribeOrders(setOrders, (err) => setLoadError(friendlyFirebaseError(err, "load live orders"))), []);
   useEffect(() => subscribeMenu(setMenuItems, (err) => setLoadError(friendlyFirebaseError(err, "load the menu"))), []);
+  useEffect(() => subscribeAllRequests(setServerRequests, (err) => setLoadError(friendlyFirebaseError(err, "load server requests"))), []);
 
   // FIX (critical security bug, part 2): the login screen already
   // refuses to let a deleted/changed profile log IN (see
@@ -56,6 +61,19 @@ export default function OwnerApp() {
   }, [activeStaff]);
 
   const liveCount = orders.filter((o) => o.status === "pending" || o.status === "in_progress").length;
+  const openRequestCount = serverRequests.filter((r) => r.status === "open" || r.status === "in_progress").length;
+
+  // Chime whenever a NEW request appears (count goes up), not on every
+  // re-render or when a request is resolved (count going down) — a
+  // ref (not state) so this doesn't itself trigger a re-render, and so
+  // it's not tied to whichever tab happens to be open right now.
+  const prevOpenCountRef = useRef(openRequestCount);
+  useEffect(() => {
+    if (openRequestCount > prevOpenCountRef.current) {
+      playRequestChime();
+    }
+    prevOpenCountRef.current = openRequestCount;
+  }, [openRequestCount]);
 
   function handleLogin(staff) {
     setActiveStaff(staff);
@@ -76,7 +94,7 @@ export default function OwnerApp() {
 
   return (
     <div className="o-shell">
-      <Sidebar active={tab} onChange={setTab} open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <Sidebar active={tab} onChange={setTab} open={sidebarOpen} onClose={() => setSidebarOpen(false)} requestCount={openRequestCount} />
 
       <main className="o-main">
         <div className="o-topbar">
@@ -97,12 +115,13 @@ export default function OwnerApp() {
 
         <AnimatePresence mode="wait">
           <motion.div key={tab} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
-            {tab === "orders" && <OrdersPanel orders={orders} activeStaff={activeStaff} />}
+            {tab === "orders" && <OrdersPanel orders={orders} activeStaff={activeStaff} menuItems={menuItems} />}
             {tab === "kitchen" && <KitchenPanel orders={orders} />}
             {tab === "staff" && <StaffPanel />}
             {tab === "analytics" && <AnalyticsPanel orders={orders} menuItems={menuItems} />}
             {tab === "settings" && <SettingsPanel menuItems={menuItems} />}
             {tab === "qrcodes" && <QrCodesPanel />}
+            {tab === "requests" && <ServerRequestsPanel requests={serverRequests} />}
           </motion.div>
         </AnimatePresence>
       </main>

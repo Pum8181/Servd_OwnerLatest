@@ -81,7 +81,37 @@ After this: `https://servd.tech` serves `marketing.html` (redirect in
 `netlify.toml`), and `https://servd.tech/feature-sheet.html` serves the
 printable feature sheet.
 
-## 4. Keep the QR generator pointed at the right place
+## 4. Get found on Google (do this once servd.tech is live)
+
+Technical SEO (meta tags, `robots.txt`, `sitemap.xml`, structured data)
+is already built into `marketing.html` and `public/` — nothing more to
+code. What's left needs your own Google account, so I can't do it:
+
+1. **[Google Search Console](https://search.google.com/search-console)**
+   → Add property → `servd.tech` → verify via the DNS TXT record method
+   (Netlify's domain settings let you add custom DNS records for this).
+   Once verified, submit `https://servd.tech/sitemap.xml` under
+   Sitemaps — this is what actually gets you indexed quickly instead of
+   waiting for Google to stumble onto the site on its own.
+2. **[Google Business Profile](https://business.google.com)** — if
+   Servd itself (not a restaurant) has a business address/contact, a
+   profile here helps it show up for local/brand searches and is one of
+   the fastest ways a brand-new domain gets any search visibility at all.
+3. **Bing Webmaster Tools** (bing.com/webmasters) — same idea as Search
+   Console, takes five minutes, and Bing can actually import your
+   Google Search Console verification directly.
+4. **Realistic expectation**: a brand-new domain with no backlinks will
+   NOT rank on page 1 for broad terms like "restaurant software" or
+   "QR ordering" — those are owned by Toast, Square, and TouchBistro,
+   who've had years and thousands of backlinks. What this setup does get
+   you: properly indexed within days instead of weeks, correct rich
+   results (the FAQ can show expandable Q&As directly in Google search
+   results), and a real shot at ranking for specific/long-tail searches
+   ("QR ordering with order confirmation," "restaurant ordering no
+   commission," or just "Servd") — which is realistically how someone
+   finds a brand-new product anyway.
+
+## 5. Keep the QR generator pointed at the right place
 
 The owner dashboard's QR Codes tab defaults its "Menu page URL" to
 whatever domain it's currently running on — since it now lives at

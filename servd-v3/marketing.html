@@ -4,9 +4,10 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#1A3626" />
-    <title>Servd — QR Ordering With a Human Check Before It Hits the Kitchen</title>
-    <meta name="description" content="Servd is a premium QR ordering system for independent restaurants: guests scan, order, and split the bill from their own phone, while every order pauses for a quick human confirmation before it reaches the kitchen." />
-    <link rel="canonical" href="https://servd.tech/marketing.html" />
+    <title>Servd — QR Ordering Software for Independent Restaurants</title>
+    <meta name="description" content="Servd is QR menu and ordering software for independent restaurants — works alongside your existing POS and payment system. Guests order from their phone the moment they're ready, mark items sold out or mark them down live, and split the bill. No commissions, ever." />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://servd.tech/" />
 
     <!-- Open Graph / Twitter card. NOTE: /og-image.png does not exist yet
          — this points at where a real 1200×630 export of the hero
@@ -14,15 +15,16 @@
          these tags degrade gracefully (most platforms just show the
          title/description with no image), they don't error. -->
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="Servd — QR Ordering With a Human Check Before It Hits the Kitchen" />
-    <meta property="og:description" content="Guests scan, order, and split the bill from their own phone. Every order pauses for a human confirmation before it reaches the kitchen." />
-    <meta property="og:url" content="https://servd.tech/marketing.html" />
+    <meta property="og:site_name" content="Servd" />
+    <meta property="og:title" content="Servd — QR Ordering Software for Independent Restaurants" />
+    <meta property="og:description" content="QR menu and ordering software that works alongside your existing POS. Guests order from their phone whenever they're ready; mark items sold out or mark them down, live. No commissions, ever." />
+    <meta property="og:url" content="https://servd.tech/" />
     <meta property="og:image" content="https://servd.tech/og-image.png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Servd — QR Ordering With a Human Check Before It Hits the Kitchen" />
-    <meta name="twitter:description" content="Guests scan, order, and split the bill from their own phone. Every order pauses for a human confirmation before it reaches the kitchen." />
+    <meta name="twitter:title" content="Servd — QR Ordering Software for Independent Restaurants" />
+    <meta name="twitter:description" content="QR menu and ordering software that works alongside your existing POS. Guests order from their phone whenever they're ready; mark items sold out or mark them down, live." />
     <meta name="twitter:image" content="https://servd.tech/og-image.png" />
 
     <script type="application/ld+json">
@@ -30,11 +32,21 @@
       "@context": "https://schema.org",
       "@graph": [
         {
+          "@type": "Organization",
+          "@id": "https://servd.tech/#organization",
+          "name": "Servd",
+          "url": "https://servd.tech/",
+          "logo": "https://servd.tech/favicon.svg",
+          "description": "Servd builds QR ordering and menu software for independent restaurants."
+        },
+        {
           "@type": "SoftwareApplication",
           "name": "Servd",
+          "url": "https://servd.tech/",
           "applicationCategory": "BusinessApplication",
           "operatingSystem": "Web",
-          "description": "QR ordering system for independent restaurants with a human confirmation step before orders reach the kitchen, per-guest order tracking, and flexible split billing.",
+          "description": "QR menu and ordering software for independent restaurants that works alongside an existing POS and payment system — live sold-out and markdown controls, per-guest order tracking, and flexible split billing.",
+          "provider": { "@id": "https://servd.tech/#organization" },
           "offers": {
             "@type": "Offer",
             "priceCurrency": "USD",
@@ -46,13 +58,18 @@
           "mainEntity": [
             {
               "@type": "Question",
+              "name": "Does this replace my POS or payment system?",
+              "acceptedAnswer": { "@type": "Answer", "text": "No. Servd is a menu and ordering layer that sits alongside what you already have — guests still pay you exactly how they do today, on your existing system. Servd doesn't touch payment at all." }
+            },
+            {
+              "@type": "Question",
               "name": "Does Servd take a cut of my sales?",
               "acceptedAnswer": { "@type": "Answer", "text": "No. It's a flat monthly rate, never a percentage of what you ring in." }
             },
             {
               "@type": "Question",
-              "name": "What happens if I don't confirm an order?",
-              "acceptedAnswer": { "@type": "Answer", "text": "It simply sits in Needs Review. Nothing reaches the kitchen until a staff member taps Approve." }
+              "name": "What happens when a guest sends an order?",
+              "acceptedAnswer": { "@type": "Answer", "text": "It lands in Needs Review right away, no server has to notice the table. Whoever's free confirms it, edits it if needed, and sends it on." }
             },
             {
               "@type": "Question",

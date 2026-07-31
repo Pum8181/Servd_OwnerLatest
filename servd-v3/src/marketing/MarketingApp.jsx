@@ -41,9 +41,8 @@ function Nav({ onOpenDemo, reducedMotion, onToggleReducedMotion }) {
   const [menuOpen, setMenuOpen] = useState(false);
 
   const links = [
-    { href: "#how-it-works", label: "How It Works" },
+    { href: "#demo", label: "See The Demo" },
     { href: "#features", label: "Features" },
-    { href: "#qr-flow", label: "QR Ordering" },
     { href: "#owner", label: "Owner Dashboard" },
     { href: "#pricing", label: "Pricing" },
     { href: "#faq", label: "FAQ" },
@@ -189,12 +188,12 @@ function DeviceMockup() {
 }
 
 function Hero({ onOpenDemo }) {
-  const words = ["No order reaches your kitchen", "until a person checks it first."];
+  const words = ["Guests order the moment they're ready.", "Not when a server finally is."];
   return (
     <header className="m-hero" id="top">
       <div className="m-wrap m-hero-grid">
         <div>
-          <Reveal className="m-eyebrow" y={12}>QR Ordering, Rebuilt Around One Missing Step</Reveal>
+          <Reveal className="m-eyebrow" y={12}>The Menu &amp; Ordering Layer For Your Existing Setup</Reveal>
           <h1 className="m-hero-h1">
             {words.map((line, i) => (
               <motion.span
@@ -210,15 +209,17 @@ function Hero({ onOpenDemo }) {
             ))}
           </h1>
           <Reveal as="p" delay={0.3} className="m-hero-sub">
-            Guests scan a table's QR, order from their own phone, and split the bill however they
-            want, in one tap. Every order still pauses for a quick human confirmation first, so the
-            wrong spice level or a mis-tapped table never becomes wasted food.
+            No more sitting at a table waiting to flag someone down, and no more servers circling
+            back three times just to ask if you're ready. Guests scan, browse the live menu, and
+            order straight from their phone whenever they're ready — it lands with staff to confirm
+            and send whenever they get a free moment. Works alongside your POS and payment system;
+            Servd handles the menu and ordering, not the till.
           </Reveal>
           <Reveal delay={0.4} className="m-hero-ctas">
             <button type="button" onClick={onOpenDemo} className="m-btn m-btn-primary m-btn-lg">
               Book a Live Demo
             </button>
-            <a href="#how-it-works" className="m-btn m-btn-ghost m-btn-lg">See how it works ↓</a>
+            <a href="#demo" className="m-btn m-btn-ghost m-btn-lg">See the full process ↓</a>
           </Reveal>
           <Reveal delay={0.48} as="p" className="m-hero-trust">
             Built for independent restaurants in <strong>Metro Vancouver, BC</strong> · No commissions, ever.
@@ -234,26 +235,80 @@ function Hero({ onOpenDemo }) {
   );
 }
 
-function HowItWorks() {
+// The full walkthrough, start to finish — scan through kitchen. This is
+// the page's centerpiece "demo," so each step gets a real visual, not
+// just a numbered paragraph: a small mockup chip showing exactly what
+// changes on-screen at that point in the flow.
+function DemoProcess() {
   const steps = [
-    { n: "01", title: "Guest scans and orders", body: "They scan the table's QR, browse the live menu, pick spice levels, and tag their name — no app to install." },
-    { n: "02", title: "It pauses for a human check", body: "The order lands in a Needs Confirmation queue, kept clearly separate from anything already in the kitchen." },
-    { n: "03", title: "One tap, it's confirmed", body: "Staff catch anything wrong, fix it if needed, and confirm — now it's genuinely in the kitchen's queue." },
-    { n: "04", title: "Bill however they want", body: "One bill, split evenly, or split per person — chosen in one tap, clear enough to read aloud at the table." },
+    {
+      icon: "📷",
+      title: "Guest scans the code at the table",
+      body: "One tap of their phone camera. No app to download, no account to create.",
+      chip: (
+        <div className="m-process-chip m-process-chip-qr">
+          <img src={qrImageUrl(DEMO_MENU_URL, 72)} alt="Example branded QR code for Table 5" width={40} height={40} loading="lazy" />
+          <span>Table 5's code</span>
+        </div>
+      ),
+    },
+    {
+      icon: "🌐",
+      title: "The live menu opens on their phone",
+      body: "Straight into their browser, with the table already attached — nothing to type in.",
+      chip: <div className="m-process-chip">servd.tech/order · Table 5</div>,
+    },
+    {
+      icon: "📝",
+      title: "They order, add their name, and choose how to split",
+      body: "One bill for the table, split evenly, or split by what each person ordered — set once, and it applies to everyone who orders after them.",
+      chip: (
+        <div className="m-process-chip-row">
+          <span className="m-process-pill">One bill</span>
+          <span className="m-process-pill is-active">Split by item</span>
+          <span className="m-process-pill">Split evenly</span>
+        </div>
+      ),
+    },
+    {
+      icon: "👀",
+      title: "It waits for staff, not the other way around",
+      body: "No server has to notice the table or walk over to ask if you're ready — the order's already sitting there. Whoever's free confirms it, and can add something the guest asked for out loud or pull an item that's out of stock, before it goes back.",
+      chip: <div className="m-process-chip m-process-chip-review">Needs Review · Table 5</div>,
+    },
+    {
+      icon: "🍽️",
+      title: "Confirmed, and it's in the kitchen",
+      body: "One tap and it's sent, timestamped, and tagged with who confirmed it — payment still happens exactly how it does today, on your existing system.",
+      chip: <div className="m-process-chip m-process-chip-confirmed">✓ Confirmed — In Kitchen</div>,
+    },
   ];
+
   return (
-    <section id="how-it-works" className="m-section">
+    <section id="demo" className="m-section">
       <div className="m-wrap">
         <Reveal className="m-section-head">
-          <p className="m-eyebrow">How A Table Becomes A Paid Check</p>
-          <h2>Four steps. No app. No POS overhaul.</h2>
+          <p className="m-eyebrow">See The Full Process</p>
+          <h2>From a scanned code to a confirmed kitchen ticket.</h2>
+          <p className="m-section-sub">
+            Five steps, start to finish — no app to install, and no changes to your POS or how
+            guests pay. Servd adds the menu and ordering layer; everything else stays exactly as it
+            is today.
+          </p>
         </Reveal>
-        <div className="m-steps">
+
+        <div className="m-process">
           {steps.map((s, i) => (
-            <Reveal key={s.n} delay={i * 0.08} className="m-step">
-              <span className="m-step-num">{s.n}</span>
-              <h3>{s.title}</h3>
-              <p>{s.body}</p>
+            <Reveal key={s.title} delay={i * 0.08} className="m-process-step">
+              <div className="m-process-marker">
+                <span className="m-process-icon">{s.icon}</span>
+                {i < steps.length - 1 && <span className="m-process-line" />}
+              </div>
+              <div className="m-process-content">
+                <h3>{s.title}</h3>
+                <p>{s.body}</p>
+                {s.chip}
+              </div>
             </Reveal>
           ))}
         </div>
@@ -264,12 +319,14 @@ function HowItWorks() {
 
 function Features() {
   const items = [
+    { icon: "🚫", title: "Mark Items Sold Out, Instantly", body: "No more \"actually, we're out of that\" after the order's already in. Flip a switch and it disappears from every phone at every table, live." },
+    { icon: "🏷", title: "Markdown Items Before They're Wasted", body: "Running low toward close? Drop the price on what's left right from the dashboard — sell it at a discount instead of throwing it out." },
+    { icon: "✓", title: "Staff Confirm When They're Free", body: "Guests order the moment they're ready. It waits for a staff member instead of a staff member having to notice the table." },
     { icon: "🌶", title: "Spice & Variant Selector", body: "Mild, Medium, Hot, Extra Hot per dish, with optional price bumps — upsells happen automatically." },
-    { icon: "✓", title: "Human Confirmation Step", body: "Nothing reaches the kitchen automatically. A person reviews and taps confirm first." },
     { icon: "👥", title: "Per-Guest Order Tracking", body: "Know exactly who ordered what, even when the whole table scanned the same QR code." },
     { icon: "🧾", title: "Flexible Split Billing", body: "Together, split evenly, or split per person — chosen in one tap, no table-side math." },
-    { icon: "⚡", title: "Live Sold-Out & Markdowns", body: "Flip a switch and an item vanishes from every phone at every table, instantly." },
-    { icon: "▦", title: "Branded QR Generator", body: "Generate a forest-and-cream QR for every table right from the owner dashboard." },
+    { icon: "📋", title: "Live Menu Editing", body: "Update descriptions, prices, and photos any time — changes show up on the customer menu immediately, no reprinting." },
+    { icon: "▦", title: "Branded QR Generator", body: "Generate a table-ready QR code right from the owner dashboard — no separate tool needed." },
   ];
   return (
     <section id="features" className="m-section m-section-tint">
@@ -294,64 +351,6 @@ function Features() {
   );
 }
 
-function QrFlow() {
-  return (
-    <section id="qr-flow" className="m-section">
-      <div className="m-wrap">
-        <Reveal className="m-section-head">
-          <p className="m-eyebrow">QR Ordering, Table-Aware From The First Scan</p>
-          <h2>One QR per table. The menu already knows where you're sitting.</h2>
-          <p className="m-section-sub">
-            Generate a code for Table 5 in the owner dashboard, and every scan of that code opens
-            the menu with the table already attached — no typing a table number, no mixing up orders.
-          </p>
-        </Reveal>
-
-        <div className="m-qr-flow">
-          <Reveal delay={0.05} className="m-qr-flow-card">
-            <div className="m-qr-flow-frame">
-              <img src={qrImageUrl(DEMO_MENU_URL)} alt="Example branded QR code for Table 5" width={160} height={160} loading="lazy" />
-            </div>
-            <strong>Table 5's QR</strong>
-            <span>Generated in the owner dashboard</span>
-          </Reveal>
-
-          <FlowArrow delay={0.15} />
-
-          <Reveal delay={0.25} className="m-qr-flow-card">
-            <div className="m-qr-flow-icon">📱</div>
-            <strong>Guest scans it</strong>
-            <span>Opens straight in their phone's browser</span>
-          </Reveal>
-
-          <FlowArrow delay={0.35} />
-
-          <Reveal delay={0.45} className="m-qr-flow-card">
-            <div className="m-qr-flow-icon">🍽️</div>
-            <strong>Table 5, pre-selected</strong>
-            <span className="m-qr-flow-url">?table=5</span>
-          </Reveal>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function FlowArrow({ delay = 0 }) {
-  return (
-    <svg className="m-flow-arrow" viewBox="0 0 60 24" fill="none" aria-hidden="true">
-      <motion.path
-        d="M2 12h50M42 4l10 8-10 8"
-        stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
-        initial={{ pathLength: 0, opacity: 0 }}
-        whileInView={{ pathLength: 1, opacity: 1 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.6, delay, ease: "easeInOut" }}
-      />
-    </svg>
-  );
-}
-
 function OwnerOverview() {
   const pending = ["Table 5 — Split by item", "Table 9 — One bill"];
   const inKitchen = ["Table 3 — Split equally"];
@@ -362,14 +361,17 @@ function OwnerOverview() {
           <p className="m-eyebrow">Your Whole Floor, At A Glance</p>
           <h2>The owner dashboard runs the shift, not just the menu.</h2>
           <p className="m-section-sub">
-            Every order pauses in Needs Review before your kitchen ever sees it. Approve, edit,
-            or reject in a tap, and watch it move into In Kitchen live.
+            Every order lands in Needs Review the moment a guest sends it — no one has to notice the
+            table. Confirm, edit, or reject in a tap whenever staff have a moment, and watch it move
+            into In Kitchen live.
           </p>
           <ul className="m-checklist">
             <li>Two-column live queue: Needs Review and In Kitchen</li>
+            <li>Mark items sold out or mark them down, live, from any device</li>
             <li>Staff PINs with instant, real-time revocation on removal</li>
             <li>Menu management with owner-assignable Trending / Chef's Specials / Discount tags</li>
             <li>Branded QR generator, built in — no third-party tool required</li>
+            <li>Works alongside your existing POS — payment stays exactly how it works today</li>
           </ul>
         </Reveal>
 
@@ -396,55 +398,11 @@ function OwnerOverview() {
   );
 }
 
-function StaffWorkflow() {
-  const [step, setStep] = useState(0);
-  const stages = ["Order placed", "Needs staff review", "Approved by staff", "In kitchen"];
-
-  useEffect(() => {
-    const t = setInterval(() => setStep((s) => (s + 1) % stages.length), 1600);
-    return () => clearInterval(t);
-  }, [stages.length]);
-
-  return (
-    <section className="m-section">
-      <div className="m-wrap">
-        <Reveal className="m-section-head">
-          <p className="m-eyebrow">The Human Check, Made Visible</p>
-          <h2>A real staff member confirms every order before the kitchen does.</h2>
-          <p className="m-section-sub">
-            This is the step every other QR tool skips. Watch an order move through it below.
-          </p>
-        </Reveal>
-
-        <Reveal delay={0.1} className="m-workflow">
-          {stages.map((label, i) => (
-            <div className="m-workflow-stage" key={label}>
-              <motion.div
-                className="m-workflow-dot"
-                animate={{
-                  backgroundColor: i <= step ? "var(--m-primary)" : "var(--m-surface-alt)",
-                  color: i <= step ? "var(--m-surface)" : "var(--m-muted)",
-                  scale: i === step ? 1.15 : 1,
-                }}
-                transition={{ duration: 0.35 }}
-              >
-                {i < step ? "✓" : i + 1}
-              </motion.div>
-              <span className={i <= step ? "is-active" : ""}>{label}</span>
-              {i < stages.length - 1 && <div className={`m-workflow-line${i < step ? " is-active" : ""}`} />}
-            </div>
-          ))}
-        </Reveal>
-      </div>
-    </section>
-  );
-}
-
 function Pricing() {
   const tiers = [
     {
       name: "Starter", price: "$149", period: "/mo", note: "One location, everything you need to launch.",
-      features: ["Unlimited tables & QR codes", "Live menu with sold-out & markdowns", "Human confirmation step", "Split billing"],
+      features: ["Unlimited tables & QR codes", "Live menu with sold-out & markdowns", "Works alongside your existing POS", "Split billing"],
     },
     {
       name: "Growth", price: "$249", period: "/mo", note: "For a busier floor with more staff.", featured: true,
@@ -462,7 +420,8 @@ function Pricing() {
           <p className="m-eyebrow">Simple, No-Commission Pricing</p>
           <h2>One flat monthly rate. Never a cut of your sales.</h2>
           <p className="m-section-sub">
-            Placeholder tiers to show the shape of it — your actual rate gets confirmed together on the demo call, not guessed at here.
+            Straightforward tiers built around how a real shift runs — walk through which one fits
+            on your demo call.
           </p>
         </Reveal>
         <div className="m-pricing-grid">
@@ -479,53 +438,7 @@ function Pricing() {
             </Reveal>
           ))}
         </div>
-        <p className="m-pricing-footnote">Illustrative pricing shown for demo purposes — nothing here has been billed to anyone yet.</p>
-      </div>
-    </section>
-  );
-}
-
-function SocialProof() {
-  const quotes = [
-    { quote: "Placeholder quote — this space is reserved for a real restaurant owner's words after the first pilot runs.", name: "Placeholder Name", role: "Independent restaurant, Metro Vancouver" },
-    { quote: "Placeholder quote — swap this out the moment you have permission to share a real one.", name: "Placeholder Name", role: "Independent restaurant, Metro Vancouver" },
-  ];
-  const [index, setIndex] = useState(0);
-
-  useEffect(() => {
-    const t = setInterval(() => setIndex((i) => (i + 1) % quotes.length), 5200);
-    return () => clearInterval(t);
-  }, [quotes.length]);
-
-  return (
-    <section className="m-section m-section-tint">
-      <div className="m-wrap">
-        <Reveal className="m-section-head" style={{ margin: "0 auto 2.5rem", textAlign: "center" }}>
-          <p className="m-eyebrow">What Owners Will Say</p>
-          <h2>Reserved for real feedback — here's the shape it'll take.</h2>
-        </Reveal>
-        <div className="m-proof-track">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={index}
-              className="m-proof-card"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.4 }}
-            >
-              <p className="m-proof-quote">&ldquo;{quotes[index].quote}&rdquo;</p>
-              <p className="m-proof-name">{quotes[index].name}</p>
-              <p className="m-proof-role">{quotes[index].role}</p>
-            </motion.div>
-          </AnimatePresence>
-        </div>
-        <div className="m-proof-dots">
-          {quotes.map((_, i) => (
-            <button key={i} type="button" className={`m-proof-dot${i === index ? " active" : ""}`} aria-label={`Show testimonial ${i + 1}`} onClick={() => setIndex(i)} />
-          ))}
-        </div>
-        <p className="m-proof-placeholder-note">Placeholder content — no restaurant has signed on yet, so nothing above is a real quote.</p>
+        <p className="m-pricing-footnote">Every plan: no per-order commission, ever.</p>
       </div>
     </section>
   );
@@ -533,8 +446,9 @@ function SocialProof() {
 
 function Faq() {
   const items = [
+    { q: "Does this replace my POS or payment system?", a: "No. Servd is a menu and ordering layer that sits alongside what you already have — guests still pay you exactly how they do today, on your existing system. Servd doesn't touch payment at all." },
     { q: "Does Servd take a cut of my sales?", a: "No. It's a flat monthly rate, never a percentage of what you ring in — see Pricing above." },
-    { q: "What happens if I don't confirm an order?", a: "It simply sits in Needs Review. Nothing reaches your kitchen until a staff member taps Approve — that pause is the whole point." },
+    { q: "What happens when a guest sends an order?", a: "It lands in Needs Review right away — no server has to notice the table or walk over. Whoever's free confirms it, edits it if needed, and sends it on." },
     { q: "Do my guests need to download an app?", a: "No. The QR opens the menu directly in their phone's browser." },
     { q: "Can I run this on my existing tablet or do I need new hardware?", a: "Any modern tablet or laptop with a browser works for the owner dashboard — no special hardware or POS integration required." },
     { q: "What if my internet or Wi-Fi drops mid-shift?", a: "This is an honest limitation worth knowing up front: Servd needs an internet connection to sync orders in real time. We can talk through backup plans for your specific setup on the demo call." },
@@ -638,7 +552,7 @@ function ContactForm() {
 
 function FinalCta({ onOpenDemo }) {
   return (
-    <section id="demo" className="m-section m-cta-final">
+    <section id="book-demo" className="m-section m-cta-final">
       <div className="m-wrap">
         <Reveal className="m-cta-inner">
           <h2>See it running on a real table, live on the call.</h2>
@@ -689,7 +603,7 @@ function Footer({ onOpenDemo }) {
             <span className="m-wordmark-mark" aria-hidden="true" />
             <span className="m-wordmark-text">Servd</span>
           </a>
-          <p>QR ordering with a human check before it hits the kitchen.</p>
+          <p>The menu and ordering layer for your existing setup.</p>
         </div>
         <div className="m-footer-links">
           <a href="/feature-sheet.html" target="_blank" rel="noopener">Feature Sheet (PDF)</a>
@@ -726,13 +640,10 @@ export default function MarketingApp() {
         <Nav onOpenDemo={() => setDemoOpen(true)} reducedMotion={reducedMotion} onToggleReducedMotion={toggleReducedMotion} />
         <main>
           <Hero onOpenDemo={() => setDemoOpen(true)} />
-          <HowItWorks />
+          <DemoProcess />
           <Features />
-          <QrFlow />
           <OwnerOverview />
-          <StaffWorkflow />
           <Pricing />
-          <SocialProof />
           <Faq />
           <FinalCta onOpenDemo={() => setDemoOpen(true)} />
         </main>
