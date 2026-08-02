@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import EmptyState from "./EmptyState";
+import { encodeTableParam } from "../../lib/tableToken";
 
 // Same free, no-API-key QR image service owner-v2.html already relies
 // on — real, scannable QR codes, no new dependency. color/bgcolor take
@@ -22,8 +23,35 @@ function isValidTable(value) {
   return /^[A-Za-z0-9][A-Za-z0-9 _-]{0,19}$/.test(value);
 }
 
+const MENU_URL_KEY = "servd_qr_menu_url";
+// The customer menu's actual GitHub Pages repo name (see DEPLOY.md) —
+// used as the fallback guess when generating a QR from the owner
+// dashboard's own (different) domain.
+const CUSTOMER_REPO_NAME = "Servd_Customer_Latest";
+
+// GitHub Pages serves each app from a repo-name subpath
+// (https://<user>.github.io/<repo>/), and the owner dashboard and
+// customer menu are TWO DIFFERENT repos/domains (Servd_OwnerLatest vs
+// Servd_Customer_Latest — see DEPLOY.md). `window.location.origin` alone
+// drops that subpath, and even with it, the dashboard's own domain is
+// never the right one to point a customer QR code at. This guesses the
+// customer domain when running on the owner dashboard's domain, and
+// otherwise falls back to the current origin/path (correct for local
+// dev, Netlify, or generating directly from the customer domain) —
+// either way it's just a starting point, hence the confirm-before-use
+// banner in the form below.
 function defaultMenuUrl() {
-  return `${window.location.origin}/index_v3.html`;
+  const saved = localStorage.getItem(MENU_URL_KEY);
+  if (saved) return saved;
+  const { origin, pathname } = window.location;
+  const segments = pathname.split("/").filter(Boolean);
+  if (segments.length === 0) return `${origin}/index_v3.html`;
+  if (/owner/i.test(segments[0])) return `${origin}/${CUSTOMER_REPO_NAME}/`;
+  return `${origin}/${segments[0]}/`;
+}
+
+function isGuessedCrossDomain() {
+  return !localStorage.getItem(MENU_URL_KEY) && /owner/i.test(window.location.pathname);
 }
 
 async function downloadQr(url, filename) {
@@ -50,12 +78,21 @@ export default function QrCodesPanel() {
   const [error, setError] = useState("");
   const [generated, setGenerated] = useState([]);
 
+  function handleMenuUrlChange(value) {
+    setMenuUrl(value);
+    // Remember the corrected URL for next time — this dashboard's
+    // domain is never the same as the customer menu's, so re-guessing
+    // wrong every visit would mean re-fixing it every visit too.
+    if (value.trim()) localStorage.setItem(MENU_URL_KEY, value.trim());
+    else localStorage.removeItem(MENU_URL_KEY);
+  }
+
   const cleanMenuUrl = menuUrl.trim() || defaultMenuUrl();
   const previewUrl = useMemo(() => {
     const table = tableInput.trim();
     if (!table) return cleanMenuUrl;
     const url = new URL(cleanMenuUrl, window.location.origin);
-    url.searchParams.set("table", table);
+    url.searchParams.set("table", encodeTableParam(table));
     return url.toString();
   }, [cleanMenuUrl, tableInput]);
 
@@ -90,10 +127,17 @@ export default function QrCodesPanel() {
             <input
               type="text"
               value={menuUrl}
-              onChange={(e) => setMenuUrl(e.target.value)}
+              onChange={(e) => handleMenuUrlChange(e.target.value)}
               placeholder={defaultMenuUrl()}
             />
-            <span className="o-field-hint">Defaults to this device's live menu link. Override it if you're printing codes for your real published domain.</span>
+            {isGuessedCrossDomain() ? (
+              <span className="o-field-hint o-field-hint--warn">
+                This dashboard lives on a different domain than the customer menu — this is only a best guess.
+                Confirm it matches <strong>{CUSTOMER_REPO_NAME}</strong>'s real Pages URL before generating codes (see DEPLOY.md).
+              </span>
+            ) : (
+              <span className="o-field-hint">Defaults to this device's live menu link. Override it if you're printing codes for your real published domain.</span>
+            )}
           </label>
 
           <label className="o-form-field">

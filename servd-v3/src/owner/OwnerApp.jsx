@@ -13,7 +13,7 @@ import ServerRequestsPanel from "./components/ServerRequestsPanel";
 import StaffLoginOverlay from "./components/StaffLoginOverlay";
 import { subscribeStaff } from "../lib/staff";
 import { subscribeAllRequests } from "../lib/serverRequests";
-import { playRequestChime } from "../lib/alertSound";
+import { playRequestChime, playOrderChime, unlockAudio } from "../lib/alertSound";
 import { friendlyFirebaseError } from "../lib/errors";
 
 const ACTIVE_STAFF_KEY = "servd_active_staff";
@@ -33,6 +33,21 @@ export default function OwnerApp() {
       return null;
     }
   });
+
+  // Unlock audio on the first genuine interaction with this tab. The
+  // PIN-pad login click (see handleLogin) covers a fresh session, but a
+  // reload keeps `activeStaff` from sessionStorage and skips that
+  // click entirely — without this, a reloaded dashboard would stay
+  // silent until the owner happened to click something.
+  useEffect(() => {
+    const unlock = () => unlockAudio();
+    window.addEventListener("pointerdown", unlock, { once: true });
+    window.addEventListener("keydown", unlock, { once: true });
+    return () => {
+      window.removeEventListener("pointerdown", unlock);
+      window.removeEventListener("keydown", unlock);
+    };
+  }, []);
 
   // Same fix as the staff listener: surface a connection/permission
   // problem instead of leaving orders/menu silently stuck empty.
@@ -61,6 +76,7 @@ export default function OwnerApp() {
   }, [activeStaff]);
 
   const liveCount = orders.filter((o) => o.status === "pending" || o.status === "in_progress").length;
+  const kitchenCount = orders.filter((o) => o.status === "in_progress").length;
   const openRequestCount = serverRequests.filter((r) => r.status === "open" || r.status === "in_progress").length;
 
   // Chime whenever a NEW request appears (count goes up), not on every
@@ -75,7 +91,36 @@ export default function OwnerApp() {
     prevOpenCountRef.current = openRequestCount;
   }, [openRequestCount]);
 
+  // Same pattern, for new customer orders — otherwise a new order lands
+  // in the list with zero audible cue (this used to only fire for
+  // server-assistance requests, not orders themselves).
+  const prevLiveCountRef = useRef(liveCount);
+  useEffect(() => {
+    if (liveCount > prevLiveCountRef.current) {
+      playOrderChime();
+    }
+    prevLiveCountRef.current = liveCount;
+  }, [liveCount]);
+
+  // Same pattern again, for orders landing in the kitchen queue
+  // (pending → in_progress, i.e. approved) — a separate count from
+  // liveCount above so approving an order still chimes even though
+  // liveCount itself doesn't change (the order was already counted as
+  // "live" while pending).
+  const prevKitchenCountRef = useRef(kitchenCount);
+  useEffect(() => {
+    if (kitchenCount > prevKitchenCountRef.current) {
+      playOrderChime();
+    }
+    prevKitchenCountRef.current = kitchenCount;
+  }, [kitchenCount]);
+
   function handleLogin(staff) {
+    // The click that submits the PIN pad is the dashboard's first real
+    // user gesture — piggyback the AudioContext unlock on it so later,
+    // listener-triggered chimes (which aren't gestures themselves)
+    // actually produce sound instead of sitting in a suspended context.
+    unlockAudio();
     setActiveStaff(staff);
     sessionStorage.setItem(ACTIVE_STAFF_KEY, JSON.stringify(staff));
   }

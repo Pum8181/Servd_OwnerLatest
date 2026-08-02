@@ -12,14 +12,22 @@ import SplitModal from "./components/SplitModal";
 import CartSheet from "./components/CartSheet";
 import ServerRequestModal from "./components/ServerRequestModal";
 import { useServerRequest } from "./useServerRequest";
+import { decodeTableParam } from "../lib/tableToken";
 
 const RESTAURANT_NAME = "Servd";
 
+// Only trusts a table number that came from a real printed/generated QR
+// link (table + matching checksum, see lib/tableToken) — a bare
+// `?table=6` with no valid tag, e.g. from someone hand-editing the
+// address bar to a different table, is ignored so it can't misroute an
+// order to the wrong table.
 function readTableFromUrl() {
   const raw = (new URLSearchParams(window.location.search).get("table") || "").trim();
   if (!raw) return "";
-  if (!/^[A-Za-z0-9][A-Za-z0-9 _-]{0,19}$/.test(raw)) return "";
-  return raw;
+  const table = decodeTableParam(raw);
+  if (!table) return "";
+  if (!/^[A-Za-z0-9][A-Za-z0-9 _-]{0,19}$/.test(table)) return "";
+  return table;
 }
 
 export default function CustomerApp() {

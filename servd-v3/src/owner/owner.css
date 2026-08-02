@@ -227,6 +227,16 @@
 .o-stat-card strong { display: block; font-size: 2rem; font-family: var(--font-display); color: var(--forest); }
 .o-stat-card span { font-size: 0.8125rem; color: var(--ink-muted); }
 
+/* ── Analytics: top-dish / busiest-table / hourly bar lists ───────── */
+.o-analytics-grid { display: grid; grid-template-columns: 1fr; gap: 1.25rem; }
+@media (min-width: 860px) { .o-analytics-grid { grid-template-columns: 1fr 1fr; } }
+.o-bar-list { display: flex; flex-direction: column; gap: 0.65rem; }
+.o-bar-row { display: grid; grid-template-columns: 7rem 1fr 2rem; align-items: center; gap: 0.6rem; }
+.o-bar-label { font-size: 0.8125rem; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.o-bar-track { height: 8px; border-radius: var(--radius-pill); background: var(--cream-deep); overflow: hidden; }
+.o-bar-fill { height: 100%; border-radius: var(--radius-pill); background: var(--forest); }
+.o-bar-value { font-size: 0.8125rem; font-weight: 700; color: var(--ink-muted); text-align: right; }
+
 /* ── Order-edit / menu-item modal (shared shell) ─────────────────────
    FIX (same modal-centering bug as the customer app): centering moved
    off the animated element and onto a static fixed flex wrapper —
@@ -284,6 +294,7 @@
 .o-image-preview img { width: 100%; max-width: 220px; margin: 0 auto 0.5rem; border-radius: var(--radius-md); aspect-ratio: 4/3; object-fit: cover; }
 .o-image-preview span { font-size: 0.75rem; color: var(--ink-muted); font-style: italic; }
 .o-field-hint { display: block; margin-top: 0.35rem; font-size: 0.6875rem; font-weight: 400; color: var(--ink-muted); font-style: italic; }
+.o-field-hint--warn { color: var(--accent-deep); font-style: normal; font-weight: 600; }
 .o-tag-checkboxes { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-top: 0.5rem; }
 .o-tag-checkbox {
   display: flex; align-items: center; gap: 0.4rem; font-size: 0.8125rem; font-weight: 600;
