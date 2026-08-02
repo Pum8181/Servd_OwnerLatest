@@ -95,6 +95,11 @@
 .o-live-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--forest-light); animation: o-pulse 1.3s ease-in-out infinite; }
 @keyframes o-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
 .o-avatar { width: 44px; height: 44px; border-radius: 50%; background: var(--forest); color: var(--cream); display: flex; align-items: center; justify-content: center; font-weight: 700; border: none; font-size: 1rem; }
+.o-test-sound-btn {
+  font-size: 0.75rem; font-weight: 600; padding: 0.45rem 0.8rem; border-radius: var(--radius-pill);
+  border: 1.5px solid var(--line); background: var(--white); color: var(--ink-muted); white-space: nowrap;
+}
+.o-test-sound-btn:hover { border-color: var(--forest); color: var(--forest); }
 .o-menu-toggle { display: none; background: none; border: none; }
 @media (max-width: 900px) { .o-menu-toggle { display: inline-flex; } }
 

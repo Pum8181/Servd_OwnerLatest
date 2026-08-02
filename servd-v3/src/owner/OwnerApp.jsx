@@ -139,7 +139,7 @@ export default function OwnerApp() {
 
   return (
     <div className="o-shell">
-      <Sidebar active={tab} onChange={setTab} open={sidebarOpen} onClose={() => setSidebarOpen(false)} requestCount={openRequestCount} />
+      <Sidebar active={tab} onChange={setTab} open={sidebarOpen} onClose={() => setSidebarOpen(false)} requestCount={openRequestCount} orderCount={liveCount} />
 
       <main className="o-main">
         <div className="o-topbar">
@@ -149,6 +149,14 @@ export default function OwnerApp() {
             </svg>
           </button>
           <span className="o-live-pill"><span className="o-live-dot" /> LIVE ORDERS · {liveCount}</span>
+          <button
+            type="button"
+            className="o-test-sound-btn"
+            onClick={() => { unlockAudio(); playOrderChime(); }}
+            title="Play the new-order chime — use this to confirm sound works on this device/browser"
+          >
+            🔊 Test Sound
+          </button>
           <button type="button" className="o-avatar" onClick={handleLogout} title={`Logged in as ${activeStaff.name} — click to log out`}>
             {activeStaff.name.charAt(0).toUpperCase()}
           </button>
