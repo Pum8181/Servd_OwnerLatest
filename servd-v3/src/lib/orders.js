@@ -106,6 +106,15 @@ export function updateOrderLines(id, lines, total) {
   return updateDoc(doc(db, "orders", id), { lines, total, edited_by_owner: true });
 }
 
+// Kitchen prep checklist: toggles one line item's "checked" flag so it
+// syncs live to every screen watching this order (owner tablet, second
+// kitchen display, etc). Deliberately NOT `edited_by_owner` — this is
+// prep progress, not a change to what was ordered.
+export function toggleOrderLineChecked(id, lines, index) {
+  const nextLines = lines.map((l, i) => (i === index ? { ...l, checked: !l.checked } : l));
+  return updateDoc(doc(db, "orders", id), { lines: nextLines });
+}
+
 // Mirrors index-v2.html's resolveSplitPreference: look for an existing
 // billing preference already set today for this table before asking the
 // customer to choose. One-time read (not a live listener) since this is

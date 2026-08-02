@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { completeOrder, archiveOrder, orderGuestName } from "../../lib/orders";
+import { completeOrder, archiveOrder, orderGuestName, toggleOrderLineChecked } from "../../lib/orders";
 import { friendlyFirebaseError } from "../../lib/errors";
 import EmptyState from "./EmptyState";
 import OrderLineItems from "./OrderLineItems";
@@ -78,22 +78,34 @@ export default function KitchenPanel({ orders }) {
         <EmptyState icon="🍽" title="Nothing cooking right now" subtitle="Approved orders show up here on their way to the table." />
       ) : (
         <AnimatePresence>
-          {inProgress.map((order) => (
-            <motion.div key={order.id} className="o-order-card" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-              <div className="o-order-meta">
-                <strong>Table {order.table_number}</strong>
-                <span>{orderGuestName(order)}</span>
-                {order.approved_by && (
-                  <div className="o-order-badges">
-                    <span className="o-badge o-badge-approved">Approved by {order.approved_by}</span>
-                  </div>
-                )}
-              </div>
-              <OrderLineItems lines={order.lines} />
-              <div className="o-order-total">${order.total.toFixed(2)}</div>
-              <button type="button" className="o-btn-primary" onClick={() => completeOrder(order.id)}>Mark Ready</button>
-            </motion.div>
-          ))}
+          {inProgress.map((order) => {
+            const lines = order.lines || [];
+            const allChecked = lines.length > 0 && lines.every((l) => l.checked);
+            return (
+              <motion.div key={order.id} className="o-order-card" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                <div className="o-order-meta">
+                  <strong>Table {order.table_number}</strong>
+                  <span>{orderGuestName(order)}</span>
+                  {order.approved_by && (
+                    <div className="o-order-badges">
+                      <span className="o-badge o-badge-approved">Approved by {order.approved_by}</span>
+                    </div>
+                  )}
+                </div>
+                <OrderLineItems lines={lines} onToggleLine={(i) => toggleOrderLineChecked(order.id, lines, i)} />
+                <div className="o-order-total">${order.total.toFixed(2)}</div>
+                <button
+                  type="button"
+                  className="o-btn-primary"
+                  onClick={() => completeOrder(order.id)}
+                  disabled={!allChecked}
+                  title={allChecked ? undefined : "Check off every item before marking this order ready"}
+                >
+                  Mark Ready
+                </button>
+              </motion.div>
+            );
+          })}
         </AnimatePresence>
       )}
 

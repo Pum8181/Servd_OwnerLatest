@@ -127,6 +127,7 @@
 }
 .o-btn-approve, .o-btn-primary { background: var(--forest); color: var(--cream); }
 .o-btn-reject { background: transparent; color: var(--ink); border: 1.5px solid var(--line); }
+.o-btn-approve:disabled, .o-btn-reject:disabled, .o-btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
 .o-status-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--line); }
 .o-status-dot.is-new { background: var(--accent); }
 
@@ -142,6 +143,9 @@
 }
 .o-line-item-price { font-weight: 600; white-space: nowrap; }
 .o-line-item-unit { font-weight: 400; color: var(--ink-muted); font-size: 0.8125rem; }
+.o-line-item-check { width: 18px; height: 18px; flex-shrink: 0; accent-color: var(--forest); cursor: pointer; }
+.o-line-item.is-checked .o-line-item-name,
+.o-line-item.is-checked .o-line-item-price { text-decoration: line-through; color: var(--ink-muted); }
 
 /* New-order badge + highlighted card glow */
 .o-badge-new { background: var(--accent); color: white; animation: o-badge-pulse 1.6s ease-in-out infinite; }
