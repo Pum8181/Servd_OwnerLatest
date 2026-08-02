@@ -27,6 +27,7 @@ export function subscribeMenu(onChange, onError) {
           discount: Number(data.discount) || 0,
           image: data.image || "",
           spiceLevels: data.spiceLevels || {},
+          hasSpiceLevels: data.hasSpiceLevels === true,
           // NEW: owner-assignable carousel tags (Trending, Chef's
           // Specials, Today's Discounts, Best Sellers) — additive, on
           // top of the legacy single `tag` field above, which stays

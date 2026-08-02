@@ -35,5 +35,13 @@ service cloud.firestore {
     match /serverRequests/{requestId} {
       allow read, write: if true;
     }
+
+    // NEW: restaurant-wide settings (currently just the owner-editable
+    // spice level names, e.g. Mild/Medium/Hot/Extra Hot) — a single
+    // doc (settings/general), not per-item. Same convenience-gate
+    // caveat as everything else here.
+    match /settings/{docId} {
+      allow read, write: if true;
+    }
   }
 }

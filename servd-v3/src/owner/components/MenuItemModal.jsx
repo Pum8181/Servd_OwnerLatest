@@ -6,7 +6,7 @@ import { friendlyFirebaseError } from "../../lib/errors";
 
 const CATEGORIES = ["Appetizers", "Mains", "Drinks", "Desserts"];
 
-const BLANK = { name: "", desc: "", price: "", cat: CATEGORIES[0], image: "", tags: [] };
+const BLANK = { name: "", desc: "", price: "", cat: CATEGORIES[0], image: "", tags: [], hasSpiceLevels: false };
 
 export default function MenuItemModal({ item, open, onClose }) {
   const [form, setForm] = useState(BLANK);
@@ -18,7 +18,7 @@ export default function MenuItemModal({ item, open, onClose }) {
 
   useEffect(() => {
     if (!open) return;
-    setForm(item ? { name: item.name, desc: item.desc, price: item.price, cat: item.cat || CATEGORIES[0], image: item.image || "", tags: item.tags || [] } : BLANK);
+    setForm(item ? { name: item.name, desc: item.desc, price: item.price, cat: item.cat || CATEGORIES[0], image: item.image || "", tags: item.tags || [], hasSpiceLevels: item.hasSpiceLevels === true } : BLANK);
     setPreviewUrl(item?.image || "");
     setPendingFile(null);
     setError("");
@@ -80,6 +80,7 @@ export default function MenuItemModal({ item, open, onClose }) {
         cat: form.cat,
         image: imageUrl,
         tags: form.tags,
+        hasSpiceLevels: form.hasSpiceLevels,
       };
       if (item) {
         await updateMenuItem(item.id, fields);
@@ -159,6 +160,15 @@ export default function MenuItemModal({ item, open, onClose }) {
           </div>
           <span className="o-field-hint">"Today's Discounts" also includes any item with an active discount automatically.</span>
         </div>
+
+        <label className="o-tag-checkbox" style={{ marginBottom: "1.1rem" }}>
+          <input
+            type="checkbox"
+            checked={form.hasSpiceLevels}
+            onChange={(e) => setForm({ ...form, hasSpiceLevels: e.target.checked })}
+          />
+          Let guests choose a spice level for this item
+        </label>
 
         {previewUrl && (
           <div className="o-image-preview">

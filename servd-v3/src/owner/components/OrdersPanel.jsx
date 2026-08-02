@@ -2,6 +2,7 @@ import { useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import OrderCard from "./OrderCard";
 import OrderEditModal from "./OrderEditModal";
+import OrderLineItems from "./OrderLineItems";
 import EmptyState from "./EmptyState";
 import { approveOrder, rejectOrder, completeOrder, orderGuestName } from "../../lib/orders";
 
@@ -55,7 +56,7 @@ export default function OrdersPanel({ orders, activeStaff, menuItems }) {
                   <strong>Table {order.table_number}</strong>
                   <span>{orderGuestName(order)}</span>
                 </div>
-                <div className="o-order-lines">{(order.lines || []).map((l) => `${l.name} × ${l.qty}`).join(", ")}</div>
+                <OrderLineItems lines={order.lines} />
                 <div className="o-order-total">${order.total.toFixed(2)}</div>
                 <button type="button" className="o-btn-primary" onClick={() => completeOrder(order.id)}>Mark Ready</button>
               </motion.div>

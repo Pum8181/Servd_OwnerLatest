@@ -3,7 +3,7 @@
 // help-flag, not a food order: different lifecycle (open → resolved,
 // no line items), different consumers (a sidebar badge + dedicated
 // panel, not the Kanban/kitchen queues).
-import { collection, doc, addDoc, updateDoc, onSnapshot, query, where, serverTimestamp } from "firebase/firestore";
+import { collection, doc, addDoc, updateDoc, deleteDoc, onSnapshot, query, where, serverTimestamp } from "firebase/firestore";
 import { db } from "./firebase";
 
 export const COOLDOWN_MS = 4 * 60 * 1000;
@@ -93,4 +93,11 @@ export function markInProgress(id) {
 
 export function resolveRequest(id) {
   return updateDoc(doc(db, COLLECTION, id), { status: "resolved", resolvedAt: serverTimestamp() });
+}
+
+// Lets the owner dismiss individual resolved requests from the history
+// list (or clear all of them) — resolved requests otherwise pile up
+// forever with no way to tidy the panel.
+export function deleteRequest(id) {
+  return deleteDoc(doc(db, COLLECTION, id));
 }

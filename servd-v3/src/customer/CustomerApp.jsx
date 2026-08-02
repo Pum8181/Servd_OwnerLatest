@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState, useCallback, useRef } from "react";
 import { subscribeMenu, effectivePrice, isFeatured, itemInCarousel } from "../lib/menu";
 import { createOrder, findTodaysSplitPreference } from "../lib/orders";
+import { subscribeSpiceLevels } from "../lib/settings";
 import { friendlyFirebaseError } from "../lib/errors";
 import Header from "./components/Header";
 import CategoryPills from "./components/CategoryPills";
@@ -9,6 +10,7 @@ import DishCard from "./components/DishCard";
 import BottomNav from "./components/BottomNav";
 import GuestModal from "./components/GuestModal";
 import SplitModal from "./components/SplitModal";
+import SpiceLevelModal from "./components/SpiceLevelModal";
 import CartSheet from "./components/CartSheet";
 import ServerRequestModal from "./components/ServerRequestModal";
 import { useServerRequest } from "./useServerRequest";
@@ -32,6 +34,7 @@ function readTableFromUrl() {
 
 export default function CustomerApp() {
   const [menuItems, setMenuItems] = useState([]);
+  const [spiceLevels, setSpiceLevels] = useState([]);
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState(null);
   const [cart, setCart] = useState({});
@@ -49,6 +52,7 @@ export default function CustomerApp() {
   const [splitPreference, setSplitPreference] = useState(() => sessionStorage.getItem("ic_split_preference") || "");
   const [guestModalOpen, setGuestModalOpen] = useState(false);
   const [splitModalOpen, setSplitModalOpen] = useState(false);
+  const [spiceModalOpen, setSpiceModalOpen] = useState(false);
   const [pendingItem, setPendingItem] = useState(null);
   const [toast, setToast] = useState("");
   const [loadError, setLoadError] = useState("");
@@ -56,6 +60,7 @@ export default function CustomerApp() {
   const serverRequest = useServerRequest(table);
 
   useEffect(() => subscribeMenu(setMenuItems, (err) => setLoadError(friendlyFirebaseError(err, "load the menu"))), []);
+  useEffect(() => subscribeSpiceLevels(setSpiceLevels, (err) => setLoadError(friendlyFirebaseError(err, "load spice level options"))), []);
 
   // FIX (cart-state bug): the guest-name prompt only ever gated on
   // `!guestIdentifier`, which — once set — stayed truthy for the rest
@@ -137,19 +142,39 @@ export default function CustomerApp() {
 
   function cartKey(item) { return item.id; }
 
-  function applyAdd(item, delta) {
+  function applyAdd(item, delta, spiceLevel = null) {
     const key = cartKey(item);
     setCart((prev) => {
       const next = { ...prev };
       const price = effectivePrice(item);
       if (!next[key] && delta > 0) {
-        next[key] = { name: item.name, qty: 0, price, menuItemId: item.id, spiceLevel: null, guestIdentifier };
+        next[key] = { name: item.name, qty: 0, price, menuItemId: item.id, spiceLevel, guestIdentifier };
       }
       if (!next[key]) return prev;
       next[key] = { ...next[key], qty: next[key].qty + delta };
       if (next[key].qty <= 0) delete next[key];
       return next;
     });
+  }
+
+  // A dish with spice options only asks once — the first time it's
+  // added to the cart, not on every subsequent tap of "+" (which just
+  // bumps the existing line's quantity).
+  function addOrAskSpice(item, delta) {
+    if (delta > 0 && item.hasSpiceLevels && spiceLevels.length > 0 && !cart[cartKey(item)]) {
+      setPendingItem({ item, delta });
+      setSpiceModalOpen(true);
+      return;
+    }
+    applyAdd(item, delta);
+  }
+
+  function handleSpiceResolved(level) {
+    setSpiceModalOpen(false);
+    const pending = pendingItem;
+    setPendingItem(null);
+    if (!pending) return;
+    applyAdd(pending.item, pending.delta, level);
   }
 
   const resolveSplitPreference = useCallback(async (callback) => {
@@ -181,10 +206,10 @@ export default function CustomerApp() {
     }
     if (delta > 0 && !splitPreference) {
       setPendingItem({ item, delta });
-      resolveSplitPreference(() => applyAdd(item, delta));
+      resolveSplitPreference(() => addOrAskSpice(item, delta));
       return;
     }
-    applyAdd(item, delta);
+    addOrAskSpice(item, delta);
   }
 
   function handleGuestResolved(name) {
@@ -195,9 +220,9 @@ export default function CustomerApp() {
     setPendingItem(null);
     if (!pending) return;
     if (!splitPreference) {
-      resolveSplitPreference(() => applyAdd(pending.item, pending.delta));
+      resolveSplitPreference(() => addOrAskSpice(pending.item, pending.delta));
     } else {
-      applyAdd(pending.item, pending.delta);
+      addOrAskSpice(pending.item, pending.delta);
     }
   }
 
@@ -211,7 +236,7 @@ export default function CustomerApp() {
     setSplitModalOpen(false);
     const pending = pendingItem;
     setPendingItem(null);
-    if (pending?.item) applyAdd(pending.item, pending.delta);
+    if (pending?.item) addOrAskSpice(pending.item, pending.delta);
     else if (pending?.callback) pending.callback();
   }
 
@@ -323,6 +348,12 @@ export default function CustomerApp() {
 
       <GuestModal open={guestModalOpen} onResolve={handleGuestResolved} />
       <SplitModal open={splitModalOpen} onResolve={handleSplitResolved} />
+      <SpiceLevelModal
+        open={spiceModalOpen}
+        itemName={pendingItem?.item?.name || "this dish"}
+        levels={spiceLevels}
+        onResolve={handleSpiceResolved}
+      />
       <ServerRequestModal
         open={serverRequest.modalOpen}
         view={serverRequest.view}

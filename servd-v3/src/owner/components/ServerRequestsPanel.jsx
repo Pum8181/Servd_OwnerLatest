@@ -1,5 +1,6 @@
+import { useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { resolveRequest, markInProgress } from "../../lib/serverRequests";
+import { resolveRequest, markInProgress, deleteRequest } from "../../lib/serverRequests";
 import EmptyState from "./EmptyState";
 
 function timeAgo(timestamp) {
@@ -12,8 +13,22 @@ function timeAgo(timestamp) {
 }
 
 export default function ServerRequestsPanel({ requests }) {
+  const [clearing, setClearing] = useState(false);
   const open = requests.filter((r) => r.status === "open" || r.status === "in_progress");
   const recentResolved = requests.filter((r) => r.status === "resolved").slice(0, 10);
+
+  async function handleClearAll() {
+    if (recentResolved.length === 0) return;
+    if (!confirm(`Delete all ${recentResolved.length} resolved request${recentResolved.length === 1 ? "" : "s"} from this list?`)) return;
+    setClearing(true);
+    try {
+      await Promise.all(recentResolved.map((r) => deleteRequest(r.id)));
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setClearing(false);
+    }
+  }
 
   return (
     <div>
@@ -57,16 +72,26 @@ export default function ServerRequestsPanel({ requests }) {
 
       {recentResolved.length > 0 && (
         <>
-          <h3 style={{ fontSize: "0.9375rem", margin: "2rem 0 0.75rem", color: "var(--ink-muted)", textTransform: "uppercase", letterSpacing: "0.04em" }}>
-            Recently Resolved
-          </h3>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", margin: "2rem 0 0.75rem" }}>
+            <h3 style={{ fontSize: "0.9375rem", color: "var(--ink-muted)", textTransform: "uppercase", letterSpacing: "0.04em" }}>
+              Recently Resolved
+            </h3>
+            <button type="button" className="o-clear-history-btn" onClick={handleClearAll} disabled={clearing}>
+              {clearing ? "Clearing…" : "Clear All"}
+            </button>
+          </div>
           <div className="o-request-history">
-            {recentResolved.map((r) => (
-              <div className="o-request-history-row" key={r.id}>
-                <span>Table {r.table_number}</span>
-                <span>Requested {timeAgo(r.requestedAt)}</span>
-              </div>
-            ))}
+            <AnimatePresence>
+              {recentResolved.map((r) => (
+                <motion.div className="o-request-history-row" key={r.id} initial={{ opacity: 1 }} exit={{ opacity: 0, height: 0 }}>
+                  <span>Table {r.table_number}</span>
+                  <span>Requested {timeAgo(r.requestedAt)}</span>
+                  <button type="button" className="o-request-history-close" onClick={() => deleteRequest(r.id)} aria-label="Dismiss">
+                    ×
+                  </button>
+                </motion.div>
+              ))}
+            </AnimatePresence>
           </div>
         </>
       )}

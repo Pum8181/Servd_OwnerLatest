@@ -1,7 +1,80 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toggleSoldOut, setDiscount, setPrice, setTags, effectivePrice, seedFullDemoMenu, CAROUSELS, itemInCarousel } from "../../lib/menu";
+import { subscribeSpiceLevels, updateSpiceLevels } from "../../lib/settings";
 import MenuItemModal from "./MenuItemModal";
 import { friendlyFirebaseError } from "../../lib/errors";
+
+// Owner names these however their kitchen actually talks about heat
+// ("Mild/Medium/Hot/Extra Hot", "1 Chili/2 Chili/3 Chili", etc.) — one
+// shared list rather than per-item, since guests expect the same scale
+// across the whole menu. Any item can then opt into showing this list
+// via its own "Let guests choose a spice level" toggle (MenuItemModal).
+function SpiceLevelsCard() {
+  const [levels, setLevels] = useState([]);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+
+  useEffect(() => subscribeSpiceLevels(setLevels, (err) => setError(friendlyFirebaseError(err, "load spice levels"))), []);
+
+  function persist(next) {
+    setLevels(next);
+    setSaving(true);
+    updateSpiceLevels(next)
+      .catch((err) => setError(friendlyFirebaseError(err, "save spice levels")))
+      .finally(() => setSaving(false));
+  }
+
+  function updateLevel(i, value) {
+    const next = [...levels];
+    next[i] = value;
+    setLevels(next);
+  }
+
+  function commitLevel(i) {
+    const value = (levels[i] || "").trim();
+    if (!value) return removeLevel(i);
+    persist(levels.map((l, idx) => (idx === i ? value : l)));
+  }
+
+  function addLevel() {
+    persist([...levels, "New Level"]);
+  }
+
+  function removeLevel(i) {
+    if (levels.length <= 1) return;
+    persist(levels.filter((_, idx) => idx !== i));
+  }
+
+  return (
+    <div className="o-side-card" style={{ marginBottom: "1.5rem" }}>
+      <h3>Spice Levels</h3>
+      <p style={{ color: "var(--ink-muted)", fontSize: "0.875rem", marginBottom: "1rem" }}>
+        Name the spice options your kitchen actually uses — this exact list is what guests pick
+        from on any dish with "Let guests choose a spice level" turned on.
+      </p>
+      <div className="o-spice-level-list">
+        {levels.map((level, i) => (
+          <div className="o-spice-level-row" key={i}>
+            <input
+              type="text"
+              value={level}
+              maxLength={24}
+              onChange={(e) => updateLevel(i, e.target.value)}
+              onBlur={() => commitLevel(i)}
+              onKeyDown={(e) => { if (e.key === "Enter") e.currentTarget.blur(); }}
+            />
+            <button type="button" className="o-btn-reject" onClick={() => removeLevel(i)} disabled={levels.length <= 1} aria-label={`Remove ${level}`}>
+              ×
+            </button>
+          </div>
+        ))}
+      </div>
+      <button type="button" className="o-btn-reject" style={{ marginTop: "0.75rem" }} onClick={addLevel}>+ Add Level</button>
+      {saving && <span className="o-field-hint" style={{ marginLeft: "0.75rem" }}>Saving…</span>}
+      {error && <p style={{ color: "var(--accent-deep)", fontSize: "0.8125rem", marginTop: "0.5rem" }}>{error}</p>}
+    </div>
+  );
+}
 
 // Chip "kind" → color mapping, shared visual language with the
 // customer-side TagBadge (same kind names, same colors) so an owner
@@ -141,6 +214,8 @@ export default function SettingsPanel({ menuItems }) {
 
   return (
     <div>
+      <SpiceLevelsCard />
+
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "0.75rem", marginBottom: "0.5rem" }}>
         <h2>Menu Management</h2>
         <div style={{ display: "flex", gap: "0.6rem" }}>

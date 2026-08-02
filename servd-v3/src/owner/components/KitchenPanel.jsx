@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { completeOrder, archiveOrder, orderGuestName } from "../../lib/orders";
 import { friendlyFirebaseError } from "../../lib/errors";
 import EmptyState from "./EmptyState";
+import OrderLineItems from "./OrderLineItems";
 
 const RETENTION_KEY = "servd_completed_retention";
 const AUTO_EXPIRE_MS = 30 * 60 * 1000; // 30 minutes
@@ -88,7 +89,7 @@ export default function KitchenPanel({ orders }) {
                   </div>
                 )}
               </div>
-              <div className="o-order-lines">{(order.lines || []).map((l) => `${l.name} × ${l.qty}`).join(", ")}</div>
+              <OrderLineItems lines={order.lines} />
               <div className="o-order-total">${order.total.toFixed(2)}</div>
               <button type="button" className="o-btn-primary" onClick={() => completeOrder(order.id)}>Mark Ready</button>
             </motion.div>
@@ -141,7 +142,7 @@ export default function KitchenPanel({ orders }) {
             completedToday.map((order) => (
               <div className="o-order-card" key={order.id} style={{ opacity: 0.7 }}>
                 <div className="o-order-meta"><strong>Table {order.table_number}</strong></div>
-                <div className="o-order-lines">{(order.lines || []).map((l) => `${l.name} × ${l.qty}`).join(", ")}</div>
+                <OrderLineItems lines={order.lines} />
                 <div className="o-order-total">${order.total.toFixed(2)}</div>
               </div>
             ))
